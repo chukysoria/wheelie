@@ -59,12 +59,7 @@ jobs:
             done
           done
           if [ -n "$PACKAGES" ]; then
-            if [ $(curl -s https://ci.linuxserver.io/job/Tools/job/wheelie/lastBuild/api/json | jq -r '.building') == "false" ]; then
-              echo "**** Triggering wheelie for packages: ${PACKAGES}****"
-              echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
-            else
-              echo "**** New packages are available but there is already an active Wheelie build, skipping ****"
-            fi
+            echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
           else
             echo "**** No new updates to any of the packages, skipping trigger ****"
           fi

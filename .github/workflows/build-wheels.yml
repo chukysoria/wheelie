@@ -141,7 +141,7 @@ jobs:
       - name: Updating git repo as necessary
         run: |
           echo "updating git repo as necessary"
-          cd .temp
+          cd ./temp
           git config --global user.name 'Bot'
           git config --global user.email 'bot@users.noreply.github.com'
           git commit -am '[bot] Updating indices'

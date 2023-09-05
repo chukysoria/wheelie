@@ -115,7 +115,7 @@ jobs:
           mkdir dist
             for os in ubuntu $(cat distros.txt | grep alpine); do
               for wheel in $(ls ./builds/build-${os}/); do
-              if ! grep -q "${wheel}" "${TEMPDIR}/wheelie/docs/${os}/published.txt" && ! echo "${wheel}" | grep -q "none-any"; then
+              if ! grep -q "${wheel}" "./temp/docs/${os}/published.txt" && ! echo "${wheel}" | grep -q "none-any"; then
                   echo "**** ${wheel} for ${os} will be uploaded to Python Package Repo ****"
                   UPLOADED="${UPLOADED}\\n${wheel}" 
                   cp  "./builds/build-${os}/${wheel}" "./dist"

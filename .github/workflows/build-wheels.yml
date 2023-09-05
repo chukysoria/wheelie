@@ -75,7 +75,11 @@ jobs:
             DISTROVER=${{ env.DISTROVER }}
             ARCH=${{ env.ARCH }}
             PACKAGES=${{ inputs.PACKAGES }}
-
+  publish-artifacts:
+    name: Publish artifacts
+    runs-on: ubuntu-latest
+    depends: build-multi
+    steps:
       - name: Retrieve artifacts
         run: |
           echo "Retrieving wheels"

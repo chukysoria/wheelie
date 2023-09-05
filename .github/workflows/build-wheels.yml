@@ -5,6 +5,12 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      PACKAGES:
+        description: "List of packages to build"
+        default: ""
+        required: true
+        type: string
   workflow_call:
     inputs:
       PACKAGES:
@@ -15,7 +21,7 @@ on:
 
 jobs:
   build-multi:
-    name: Build ${{ matrix.ARCH }}
+    name: Build ${{ matrix.ARCH }} - ${{ matrix.DISTRO }} 
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,7 +30,7 @@ jobs:
 
     steps:
       - name: Clone Repository
-        uses: action/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Prepare variables
         run: |

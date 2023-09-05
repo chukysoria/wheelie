@@ -2,7 +2,7 @@ ARG DISTRO
 ARG DISTROVER
 ARG ARCH
 
-FROM ghcr.io/linuxserver/baseimage-${DISTRO}:${ARCH}-${DISTROVER} as builder
+FROM ghcr.io/chukysoria/baseimage-${DISTRO}:${ARCH}-${DISTROVER} as builder
 
 ARG DISTRO
 ARG DISTROVER
@@ -73,7 +73,18 @@ RUN \
   if [ -z "${PACKAGES}" ]; then \
     PACKAGES=$(cat /packages.txt); \
   fi && \
-  pip wheel --wheel-dir=/build --find-links="https://wheel-index.linuxserver.io/${INDEXDISTRO}/" --no-cache-dir -v \
+  # ignore official arm32v7 wheel of grpcio
+  if [ "${DISTRO}" = "alpine" ] && [ "${ARCH}" = "arm32v7" ]; then \
+    GRPCIOSKIP="--no-binary grpcio"; \
+  else \
+    GRPCIOSKIP=""; \
+  fi && \
+  if [ "${ARCH}" = "arm32v7" ]; then \
+    WRAPTNATIVE="--no-binary wrapt"; \
+  else \
+    WRAPTNATIVE=""; \
+  fi && \
+  pip wheel --wheel-dir=/build --extra-index-url="https://gitlab.com/api/v4/projects/49075787/packages/pypi/simple" --no-cache-dir -v ${GRPCIOSKIP} ${WRAPTNATIVE} \
     ${PACKAGES} && \
   echo "**** Wheels built are: ****" && \
   ls /build

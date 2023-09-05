@@ -29,9 +29,6 @@ jobs:
         DISTRO: [alpine-3.17, alpine-3.18]
 
     steps:
-      - name: Clone Repository
-        uses: actions/checkout@v4
-
       - name: Prepare variables
         run: |
           echo "DISTRONAME=$(echo ${{ matrix.DISTRO }} | sed 's|-.*||')" >> $GITHUB_ENV
@@ -75,11 +72,15 @@ jobs:
             DISTROVER=${{ env.DISTROVER }}
             ARCH=${{ env.ARCH }}
             PACKAGES=${{ inputs.PACKAGES }}
+  
   publish-artifacts:
     name: Publish artifacts
     runs-on: ubuntu-latest
     needs: build-multi
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
       - name: Retrieve artifacts
         run: |
           echo "Retrieving wheels"

@@ -2,3 +2,4 @@ Pillow-10.0.0-cp311-cp311-linux_armv7l.whl
 numpy-1.25.2-cp311-cp311-linux_armv7l.whl
 pandas-2.1.0-cp311-cp311-linux_armv7l.whl
 cffi-1.15.1-cp311-cp311-linux_armv7l.whl
+lxml-4.9.3-cp311-cp311-linux_armv7l.whl

@@ -131,7 +131,7 @@ jobs:
         with:
           user: ${{ secrets.PY_REPO_USER }}
           password: ${{ secrets.PY_REPO_PW }}
-          repository-url: ${{ secrets.PY_REPO_URL}}
+          repository-url: ${{ env.PY_REPO_URL}}
 
       - name: Updating git repo as necessary
         run: |

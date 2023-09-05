@@ -37,14 +37,14 @@ jobs:
           echo "DISTRONAME=$(echo ${{ matrix.DISTRO }} | sed 's|-.*||')" >> $GITHUB_ENV
           echo "DISTROVER=$(echo ${{ matrix.DISTRO }} | sed 's|.*-||')" >> $GITHUB_ENV 
           if [ "${{ matrix.ARCH }}" == "X86-64-MULTI" ]; then
-              echo "ARCH='amd64'" >> $GITHUB_ENV
-              echo "PLATFORM='linux/amd64'" >> $GITHUB_ENV
+              echo "ARCH=amd64" >> $GITHUB_ENV
+              echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
           elif [ "${{ matrix.ARCH }}" == "ARM64" ]; then
-              echo "ARCH='arm64v8'" >> $GITHUB_ENV
-              echo "PLATFORM='linux/arm64'" >> $GITHUB_ENV
+              echo "ARCH=arm64v8" >> $GITHUB_ENV
+              echo "PLATFORM=linux/arm64" >> $GITHUB_ENV
           else
-              echo "ARCH='arm32v7'" >> $GITHUB_ENV
-              echo "PLATFORM='linux/arm/v7'" >> $GITHUB_ENV
+              echo "ARCH=arm32v7" >> $GITHUB_ENV
+              echo "PLATFORM=linux/arm/v7" >> $GITHUB_ENV
           fi
 
       - name: Set up QEMU

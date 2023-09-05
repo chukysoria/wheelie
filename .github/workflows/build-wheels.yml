@@ -78,7 +78,7 @@ jobs:
   publish-artifacts:
     name: Publish artifacts
     runs-on: ubuntu-latest
-    depends: build-multi
+    needs: build-multi
     steps:
       - name: Retrieve artifacts
         run: |

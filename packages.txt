@@ -12,3 +12,5 @@ bluepy
 PyWavelets
 wrapt
 ninja
+webrtcvad-wheels
+psycopg2-binary   

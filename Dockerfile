@@ -55,7 +55,9 @@ RUN \
       libxml2-dev \
       libxslt-dev \
       make \
+      musl-dev \
       openssl-dev \
+      pkgconfig \
       py3-pip \
       python3-dev \
       zlib-dev; \
@@ -84,7 +86,8 @@ RUN \
   else \
     WRAPTNATIVE=""; \
   fi && \
-  pip wheel --wheel-dir=/build --extra-index-url="https://gitlab.com/api/v4/projects/49075787/packages/pypi/simple" --no-cache-dir -v ${GRPCIOSKIP} ${WRAPTNATIVE} \
+  pip wheel --wheel-dir=/build --extra-index-url="https://gitlab.com/api/v4/projects/49075787/packages/pypi/simple" \
+  --find-links="https://wheel-index.linuxserver.io/${INDEXDISTRO}/" --no-cache-dir -v ${GRPCIOSKIP} ${WRAPTNATIVE} \
     ${PACKAGES} && \
   echo "**** Wheels built are: ****" && \
   ls /build

@@ -1,0 +1,76 @@
+name: Wheelie Scheduler
+
+on:
+  #schedule:
+  #  - cron:  '00 * * * *'
+  workflow_dispatch:
+
+jobs:
+  wheelie-scheduler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Check for updates
+        run: |
+          ALLPACKAGES=$(cat packages.txt)
+          DISTROS=$(cat distros.txt)
+          for DISTRO in ${DISTROS}; do
+            IMAGE=$(echo ${DISTRO} | awk -F'-' '{print $1}')
+            TAG=$(echo ${DISTRO} | awk -F'-' '{print $2}')
+            docker run -d --rm --name ${IMAGE}-${TAG} ghcr.io/chukysoria/baseimage-${IMAGE}:${TAG}
+            docker exec ${IMAGE}-${TAG} bash -c "\
+              if [ -f /usr/bin/apt ]; then \
+                apt-get update && apt-get install -y python3-venv; \
+              else \
+                apk add --no-cache python3; \
+              fi && \
+              mkdir -p /lsiopy && \
+              python3 -m venv /lsiopy && \
+              /lsiopy/bin/pip install -U pip"
+          done
+          for PACKAGE in ${ALLPACKAGES}; do
+            for DISTRO in ${DISTROS}; do
+              if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
+                break
+              fi
+              IMAGE=$(echo ${DISTRO} | awk -F'-' '{print $1}')
+              TAG=$(echo ${DISTRO} | awk -F'-' '{print $2}')
+              if [ "${IMAGE}" = "alpine" ]; then
+                OS="${DISTRO}"
+              else
+                OS="${IMAGE}"
+              fi
+              VERSION=$(docker exec ${IMAGE}-${TAG} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
+              CPYTHON=$(docker exec ${IMAGE}-${TAG} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")
+              for ARCH in armv7l; do
+                if ! grep -q "${PACKAGE}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then
+                  echo "**** Adding ${PACKAGE}-${VERSION} to build list ****"
+                  PACKAGES="${PACKAGE} ${PACKAGES}"
+                  break
+                else
+                  echo "**** ${PACKAGE}-${VERSION}-${CPYTHON}-${ARCH} wheel already built for ${DISTRO}, skipping ****"
+                fi
+              done
+              if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
+                break
+              fi
+            done
+          done
+          if [ -n "$PACKAGES" ]; then
+            if [ $(curl -s https://ci.linuxserver.io/job/Tools/job/wheelie/lastBuild/api/json | jq -r '.building') == "false" ]; then
+              echo "**** Triggering wheelie for packages: ${PACKAGES}****"
+              echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
+            else
+              echo "**** New packages are available but there is already an active Wheelie build, skipping ****"
+            fi
+          else
+            echo "**** No new updates to any of the packages, skipping trigger ****"
+          fi
+      
+      - name: Trigger if there's updates
+        uses: ./.github/workflows/build-wheels.yml
+        if: ${{ env.PACKAGES != '' }}
+        with:
+          PACKAGES: ${{ env.PACKAGES }}

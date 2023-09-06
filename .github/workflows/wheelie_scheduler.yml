@@ -6,66 +6,97 @@ on:
   workflow_dispatch:
 
 jobs:
-  wheelie-scheduler:
+  get-variables:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
-
-      - name: Check for updates
+      
+      - name: Export packages and distros
         run: |
-          ALLPACKAGES=$(cat packages.txt)
-          DISTROS=$(cat distros.txt)
-          for DISTRO in ${DISTROS}; do
+          echo "ALLPACKAGES=$(cat packages.txt)" >> $GITHUB_ENV
+          echo "TAGS=$(sed -r 's/-/:/g' distros.txt)" >> $GITHUB_ENV
+    outputs:
+      ALLPACKAGES: ${{ env.ALLPACKAGES }}
+      TAGS: ${{ env.TAGS }}
+
+  run-containers:
+    needs: get-variables
+    runs-on: ubuntu-latest
+    container: ghcr.io/chukysoria/baseimage-${{ matrix.DISTRO }}
+    strategy:
+      matrix:
+        TAGS: [ ${{ needs.get-variables.outputs.TAGS }} ]
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          if [ -f /usr/bin/apt ]; then \
+            apt-get update && apt-get install -y python3-venv; \
+          else \
+            apk add --no-cache python3; \
+          fi && \
+          mkdir -p /lsiopy && \
+          python3 -m venv /lsiopy && \
+          /lsiopy/bin/pip install -U pip"
+
+      - name: Check packages
+        run: |
+          DISTRO=$(echo "${{ matrix.TAGS }}" | sed -r "s/:/-/g")
+          for PACKAGE in ${{ needs.get-variables.outputs.ALLPACKAGES }}; do
+            if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
+              break
+            fi
             IMAGE=$(echo ${DISTRO} | awk -F'-' '{print $1}')
             TAG=$(echo ${DISTRO} | awk -F'-' '{print $2}')
-            docker run -d --rm --name ${DISTRO} ghcr.io/chukysoria/baseimage-${IMAGE}:${TAG}
-            docker ps
-            sleep 10
-            docker exec ${DISTRO} bash -c "\
-              if [ -f /usr/bin/apt ]; then \
-                apt-get update && apt-get install -y python3-venv; \
-              else \
-                apk add --no-cache python3; \
-              fi && \
-              mkdir -p /lsiopy && \
-              python3 -m venv /lsiopy && \
-              /lsiopy/bin/pip install -U pip"
-          done
-          for PACKAGE in ${ALLPACKAGES}; do
-            for DISTRO in ${DISTROS}; do
-              if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
+            if [ "${IMAGE}" = "alpine" ]; then
+              OS="${DISTRO}"
+            else
+              OS="${IMAGE}"
+            fi
+            VERSION=$(/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}')
+            CPYTHON=$(printf "$(python3 -V)" | awk '{print $2}' | awk 'BEGIN{FS=OFS="."} NF--' | sed 's|\.||g' | sed 's|^|cp|g')
+            for ARCH in armv7l; do
+              if ! grep -q "${PACKAGE}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then
+                echo "**** Adding ${PACKAGE}-${VERSION} to build list ****"
+                PACKAGES="${PACKAGE} ${PACKAGES}"
                 break
-              fi
-              IMAGE=$(echo ${DISTRO} | awk -F'-' '{print $1}')
-              TAG=$(echo ${DISTRO} | awk -F'-' '{print $2}')
-              if [ "${IMAGE}" = "alpine" ]; then
-                OS="${DISTRO}"
               else
-                OS="${IMAGE}"
-              fi
-              VERSION=$(docker exec ${DISTRO} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
-              CPYTHON=$(docker exec ${DISTRO} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")
-              for ARCH in armv7l; do
-                if ! grep -q "${PACKAGE}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then
-                  echo "**** Adding ${PACKAGE}-${VERSION} to build list ****"
-                  PACKAGES="${PACKAGE} ${PACKAGES}"
-                  break
-                else
-                  echo "**** ${PACKAGE}-${VERSION}-${CPYTHON}-${ARCH} wheel already built for ${DISTRO}, skipping ****"
-                fi
-              done
-              if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
-                break
+                echo "**** ${PACKAGE}-${VERSION}-${CPYTHON}-${ARCH} wheel already built for ${DISTRO}, skipping ****"
               fi
             done
+            if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
+              break
+            fi
           done
           if [ -n "$PACKAGES" ]; then
-            echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
+            echo "$PACKAGES" >> ./packages_to_install.txt
           else
-            echo "**** No new updates to any of the packages, skipping trigger ****"
+            echo "**** No new updates to any of the packages for ${DISTRO}****"
           fi
+        
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.TAGS }}
+          path: ./packages_to_install.txt
+
+  trigger:
+    needs: run-containers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
       
+      - name: Merge packages
+        run: |
+          echo "PACKAGES=$(find ./artifacts -name packages_to_install.txt -exec cat {} +)" >> $GITHUB_ENV
+
       - name: Trigger if there's updates
         uses: ./.github/workflows/build-wheels.yml
         if: ${{ env.PACKAGES != '' }}

@@ -99,6 +99,9 @@ jobs:
     needs: run-containers
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -109,7 +112,7 @@ jobs:
           echo "PACKAGES=$(find ./artifacts -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: Trigger if there's updates
-        uses: chukysoria/wheelie/.github/workflows/build-wheels.yml@main
+        uses: ./.github/workflows/build-wheels.yml
         if: ${{ env.PACKAGES != '' }}
         with:
           PACKAGES: ${{ env.PACKAGES }}

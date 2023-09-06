@@ -3,3 +3,4 @@ numpy-1.25.2-cp310-cp310-linux_armv7l.whl
 pandas-2.1.0-cp310-cp310-linux_armv7l.whl
 cffi-1.15.1-cp310-cp310-linux_armv7l.whl
 lxml-4.9.3-cp310-cp310-linux_armv7l.whl
+ninja-1.11.1-cp310-cp310-linux_armv7l.whl

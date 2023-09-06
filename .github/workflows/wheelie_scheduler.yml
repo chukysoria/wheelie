@@ -95,7 +95,7 @@ jobs:
           name: ${{ env.DISTRO }}
           path: ./packages_to_install.txt
 
-  trigger:
+  merge-artifacts:
     needs: run-containers
     runs-on: ubuntu-latest
     steps:
@@ -110,9 +110,12 @@ jobs:
       - name: Merge packages, removing duplicates
         run: |
           echo "PACKAGES=$(find ./artifacts -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> $GITHUB_ENV
-
-      - name: Trigger if there's updates
-        uses: ./.github/workflows/build-wheels.yml
-        if: ${{ env.PACKAGES != '' }}
-        with:
-          PACKAGES: ${{ env.PACKAGES }}
+    outputs:
+      PACKAGES: ${{ env.PACKAGES }}
+  
+  build-wheels:
+    needs: merge-artifacts
+    if: ${{ needs.merge-artifacts.outputs.PACKAGES != '' }}
+    uses: ./.github/workflows/build-wheels.yml
+    with:
+      PACKAGES: ${{ needs.merge-artifacts.outputs.PACKAGES }}

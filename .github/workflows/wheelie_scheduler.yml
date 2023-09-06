@@ -20,6 +20,7 @@ jobs:
             IMAGE=$(echo ${DISTRO} | awk -F'-' '{print $1}')
             TAG=$(echo ${DISTRO} | awk -F'-' '{print $2}')
             docker run -d --rm --name ${IMAGE}-${TAG} ghcr.io/chukysoria/baseimage-${IMAGE}:${TAG}
+            docker ps
             docker exec ${IMAGE}-${TAG} bash -c "\
               if [ -f /usr/bin/apt ]; then \
                 apt-get update && apt-get install -y python3-venv; \

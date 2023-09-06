@@ -92,7 +92,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.TAG }}
+          name: ${{ env.DISTRO }}
           path: ./packages_to_install.txt
 
   trigger:

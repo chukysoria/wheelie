@@ -73,48 +73,51 @@ jobs:
             ARCH=${{ env.ARCH }}
             PACKAGES=${{ inputs.PACKAGES }}
   
+      - name: Retrieve artifacts
+        run: |
+          if echo "${{ matrix.DISTRO }}" | grep ubuntu; then
+              mkdir -p builds/build-ubuntu
+              echo "ARTIFACT-NAME=build-ubuntu" >> $GITHUB_ENV
+          else
+              mkdir -p builds/build-${{ matrix.DISTRO }}
+              echo "ARTIFACT-NAME=build-${{ matrix.DISTRO }}" >> $GITHUB_ENV
+          fi
+          echo "**** Retrieving wheels for ${{ env.ARCH }}-${{ matrix.DISTRO }} ****"
+          docker create --name ${{ env.ARCH }}-${{ matrix.DISTRO }} ghcr.io/chukysoria/wheelie:${{ env.ARCH }}-${{ matrix.DISTRO }} blah
+          if echo ${{ matrix.DISTRO }} | grep alpine; then
+              docker cp ${{ env.ARCH }}-${{ matrix.DISTRO }}:/build/. builds/build-${{ matrix.DISTRO }}/
+          else
+              docker cp ${{ env.ARCH }}-${{ matrix.DISTRO }}:/build/. builds/build-ubuntu/
+          fi
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT-NAME }}
+          path:  ${{ github.workspace }}/builds/${{ env.ARTIFACT-NAME }}/*
+      
+
   publish-artifacts:
     name: Publish artifacts
     runs-on: ubuntu-latest
     needs: build-multi
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: Retrieve artifacts
-        run: |
-          echo "Retrieving wheels"
-          for distro in $(cat distros.txt); do
-              if echo "${distro}" | grep ubuntu; then
-                  mkdir -p builds/build-ubuntu
-              else
-                  mkdir -p builds/build-${distro}
-              fi
-              for arch in arm32v7; do
-                  echo "**** Retrieving wheels for ${arch}-${distro} ****"
-                  docker pull ghcr.io/chukysoria/wheelie:${arch}-${distro}
-                  docker create --name ${arch}-${distro} ghcr.io/chukysoria/wheelie:${arch}-${distro} blah
-                  if echo ${distro} | grep alpine; then
-                      docker cp ${arch}-${distro}:/build/. builds/build-${distro}/
-                  else
-                      docker cp ${arch}-${distro}:/build/. builds/build-ubuntu/
-                  fi
-                  docker rm ${arch}-${distro}
-                  docker rmi ghcr.io/chukysoria/wheelie:${arch}-${distro}
-              done
-          done
-
       - name: Checkout to temp folder
         uses: actions/checkout@v4
         with:
           ref: main
           path: temp
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./builds
 
       - name: Check wheels created
         run: |
           echo "pushing wheels as necessary"
           mkdir dist
-            for os in ubuntu $(cat distros.txt | grep alpine); do
+            for os in ubuntu $(cat ./temp/distros.txt | grep alpine); do
               for wheel in $(ls ./builds/build-${os}/); do
               if ! grep -q "${wheel}" "./temp/docs/${os}/published.txt" && ! echo "${wheel}" | grep -q "none-any"; then
                   echo "**** ${wheel} for ${os} will be uploaded to Python Package Repo ****"

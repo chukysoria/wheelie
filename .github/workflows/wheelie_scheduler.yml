@@ -109,7 +109,7 @@ jobs:
           echo "PACKAGES=$(find ./artifacts -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: Trigger if there's updates
-        uses: ./.github/workflows/build-wheels.yml
+        uses: chukysoria/wheelie/.github/workflows/build-wheels.yml@main
         if: ${{ env.PACKAGES != '' }}
         with:
           PACKAGES: ${{ env.PACKAGES }}

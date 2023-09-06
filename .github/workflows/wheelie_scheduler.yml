@@ -19,9 +19,9 @@ jobs:
           for DISTRO in ${DISTROS}; do
             IMAGE=$(echo ${DISTRO} | awk -F'-' '{print $1}')
             TAG=$(echo ${DISTRO} | awk -F'-' '{print $2}')
-            docker run -d --rm --name ${IMAGE}-${TAG} ghcr.io/chukysoria/baseimage-${IMAGE}:${TAG}
+            docker run -d --rm --name ${DISTRO} ghcr.io/chukysoria/baseimage-${DISTRO}
             docker ps
-            docker exec ${IMAGE}-${TAG} bash -c "\
+            docker exec ${DISTRO} bash -c "\
               if [ -f /usr/bin/apt ]; then \
                 apt-get update && apt-get install -y python3-venv; \
               else \
@@ -43,8 +43,8 @@ jobs:
               else
                 OS="${IMAGE}"
               fi
-              VERSION=$(docker exec ${IMAGE}-${TAG} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
-              CPYTHON=$(docker exec ${IMAGE}-${TAG} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")
+              VERSION=$(docker exec ${DISTRO} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
+              CPYTHON=$(docker exec ${DISTRO} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")
               for ARCH in armv7l; do
                 if ! grep -q "${PACKAGE}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then
                   echo "**** Adding ${PACKAGE}-${VERSION} to build list ****"

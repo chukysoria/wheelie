@@ -107,6 +107,7 @@ jobs:
       - name: Checkout to temp folder
         uses: actions/checkout@v4
         with:
+          ref: main
           path: temp
 
       - name: Check wheels created

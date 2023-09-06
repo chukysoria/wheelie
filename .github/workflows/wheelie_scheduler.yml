@@ -40,7 +40,7 @@ jobs:
         run: |
           DISTRO=(echo '${{ matrix.TAG }}' | sed -r 's/:/-/g')
           echo "DISTRO=$DISTRO" >> $GITHUB_ENV
-          docker run -d --rm --name ${{ env.DISTRO }} ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
+          docker run -d --rm --name $DISTRO ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
 
       - name: Install dependencies        
         run: |

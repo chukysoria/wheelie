@@ -1,5 +1,4 @@
 cffi
-cryptography
 gevent
 lxml
 numpy

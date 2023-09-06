@@ -12,4 +12,3 @@ PyWavelets
 wrapt
 ninja
 webrtcvad
-psycopg2

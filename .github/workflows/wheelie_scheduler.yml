@@ -23,10 +23,10 @@ jobs:
   run-containers:
     needs: get-variables
     runs-on: ubuntu-latest
-    container: ghcr.io/chukysoria/baseimage-${{ matrix.DISTRO }}
+    container: ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
     strategy:
       matrix:
-        TAGS: ${{ fromJson(needs.get-variables.outputs.TAGS) }}
+        TAG: ${{ fromJson(needs.get-variables.outputs.TAGS) }}
 
     steps:
       - name: Check out repo
@@ -45,7 +45,7 @@ jobs:
 
       - name: Check packages
         run: |
-          DISTRO=$(echo "${{ matrix.TAGS }}" | sed -r "s/:/-/g")
+          DISTRO=$(echo "${{ matrix.TAG }}" | sed -r "s/:/-/g")
           for PACKAGE in ${{ needs.get-variables.outputs.ALLPACKAGES }}; do
             if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
               break
@@ -81,7 +81,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.TAGS }}
+          name: ${{ matrix.TAG }}
           path: ./packages_to_install.txt
 
   trigger:

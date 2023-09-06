@@ -6,3 +6,7 @@ lxml-4.9.3-cp311-cp311-linux_armv7l.whl
 ninja-1.11.1-cp311-cp311-linux_armv7l.whl
 grpcio-1.57.0-cp311-cp311-linux_armv7l.whl
 wrapt-1.15.0-cp311-cp311-linux_armv7l.whl
+PyNaCl-1.5.0-cp311-cp311-linux_armv7l.whl
+PyWavelets-1.4.1-cp311-cp311-linux_armv7l.whl
+PyYAML-6.0.1-cp311-cp311-linux_armv7l.whl
+bluepy-1.3.0-cp311-cp311-linux_armv7l.whl

@@ -104,9 +104,9 @@ jobs:
         with:
           path: ./artifacts
       
-      - name: Merge packages
+      - name: Merge packages, removing duplicates
         run: |
-          echo "PACKAGES=$(find ./artifacts -name packages_to_install.txt -exec cat {} +)" >> $GITHUB_ENV
+          echo "PACKAGES=$(find ./artifacts -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: Trigger if there's updates
         uses: ./.github/workflows/build-wheels.yml

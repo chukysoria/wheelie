@@ -15,9 +15,9 @@ jobs:
       - name: Export packages and distros
         run: |
           tr '\n' ' ' < packages.txt > packages-clean.txt
-          tr '\n' ' ' < distros.txt > distros-clean.txt
+          tr '\n' ',' < distros.txt > distros-clean.txt
           echo "ALLPACKAGES=$(cat packages-clean.txt)" >> $GITHUB_ENV
-          echo "TAGS=$(sed -r 's/-/:/g' distros-clean.txt)" >> $GITHUB_ENV
+          echo "TAGS=[$(sed -r 's/-/:/g' distros-clean.txt)]" >> $GITHUB_ENV
     outputs:
       ALLPACKAGES: ${{ env.ALLPACKAGES }}
       TAGS: ${{ env.TAGS }}
@@ -28,7 +28,7 @@ jobs:
     container: ghcr.io/chukysoria/baseimage-${{ matrix.DISTRO }}
     strategy:
       matrix:
-        TAGS: [ needs.get-variables.outputs.TAGS ]
+        TAGS: ${{ needs.get-variables.outputs.TAGS }}
 
     steps:
       - name: Check out repo

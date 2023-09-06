@@ -23,7 +23,6 @@ jobs:
   run-containers:
     needs: get-variables
     runs-on: ubuntu-latest
-    container: ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
     strategy:
       matrix:
         TAG: ${{ fromJson(needs.get-variables.outputs.TAGS) }}
@@ -32,20 +31,31 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm
+
+      - name: Run container     
         run: |
-          if [ -f /usr/bin/apt ]; then \
-            apt-get update && apt-get install -y python3-venv; \
-          else \
-            apk add --no-cache python3; \
-          fi && \
-          mkdir -p /lsiopy && \
-          python3 -m venv /lsiopy && \
-          /lsiopy/bin/pip install -U pip"
+          echo "DISTRO=$(echo '${{ matrix.TAG }}'' | sed -r 's/:/-/g')" >> $GITHUB_ENV
+          docker run -d --rm --name ${{ env.DISTRO }} ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
+
+      - name: Install dependencies        
+        run: |
+          docker exec ${{ env.DISTRO }} bash -c "\
+            if [ -f /usr/bin/apt ]; then \
+              apt-get update && apt-get install -y python3-venv; \
+            else \
+              apk add --no-cache python3; \
+            fi && \
+            mkdir -p /lsiopy && \
+            python3 -m venv /lsiopy && \
+            /lsiopy/bin/pip install -U pip"
 
       - name: Check packages
         run: |
-          DISTRO=$(echo "${{ matrix.TAG }}" | sed -r "s/:/-/g")
+          DISTRO=${{ env.DISTRO }}
           for PACKAGE in ${{ needs.get-variables.outputs.ALLPACKAGES }}; do
             if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
               break
@@ -57,8 +67,8 @@ jobs:
             else
               OS="${IMAGE}"
             fi
-            VERSION=$(/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}')
-            CPYTHON=$(printf "$(python3 -V)" | awk '{print $2}' | awk 'BEGIN{FS=OFS="."} NF--' | sed 's|\.||g' | sed 's|^|cp|g')
+            VERSION=$(docker exec ${DISTRO} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
+            CPYTHON=$(docker exec ${DISTRO} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")           
             for ARCH in armv7l; do
               if ! grep -q "${PACKAGE}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then
                 echo "**** Adding ${PACKAGE}-${VERSION} to build list ****"

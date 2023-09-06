@@ -14,8 +14,10 @@ jobs:
       
       - name: Export packages and distros
         run: |
-          echo "ALLPACKAGES=$(cat packages.txt)" >> $GITHUB_ENV
-          echo "TAGS=$(sed -r 's/-/:/g' distros.txt)" >> $GITHUB_ENV
+          tr '\n' ' ' < packages.txt > packages-clean.txt
+          tr '\n' ' ' < distros.txt > distros-clean.txt
+          echo "ALLPACKAGES=$(cat packages-clean.txt)" >> $GITHUB_ENV
+          echo "TAGS=$(sed -r 's/-/:/g' distros-clean.txt)" >> $GITHUB_ENV
     outputs:
       ALLPACKAGES: ${{ env.ALLPACKAGES }}
       TAGS: ${{ env.TAGS }}

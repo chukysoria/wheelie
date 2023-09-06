@@ -75,7 +75,7 @@ RUN \
   if [ -z "${PACKAGES}" ]; then \
     PACKAGES=$(cat /packages.txt); \
   fi && \
-  # ignore official arm32v7 wheel of grpcio
+  # ignore official arm32v7 wheel of grpcio and wrapt
   if [ "${DISTRO}" = "alpine" ] && [ "${ARCH}" = "arm32v7" ]; then \
     GRPCIOSKIP="--no-binary grpcio"; \
   else \

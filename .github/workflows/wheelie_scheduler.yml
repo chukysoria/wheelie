@@ -26,7 +26,7 @@ jobs:
     container: ghcr.io/chukysoria/baseimage-${{ matrix.DISTRO }}
     strategy:
       matrix:
-        TAGS: [ ${{ needs.get-variables.outputs.TAGS }} ]
+        TAGS: [ needs.get-variables.outputs.TAGS ]
 
     steps:
       - name: Check out repo

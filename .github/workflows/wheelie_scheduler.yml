@@ -38,7 +38,7 @@ jobs:
 
       - name: Run container     
         run: |
-          DISTRO=${{ matrix.TAG }}' | sed -r 's/:/-/g')
+          DISTRO=(echo '${{ matrix.TAG }}' | sed -r 's/:/-/g')
           echo "DISTRO=$DISTRO" >> $GITHUB_ENV
           docker run -d --rm --name ${{ env.DISTRO }} ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
 

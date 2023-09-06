@@ -119,3 +119,4 @@ jobs:
     uses: ./.github/workflows/build-wheels.yml
     with:
       PACKAGES: ${{ needs.merge-artifacts.outputs.PACKAGES }}
+    secrets: inherit

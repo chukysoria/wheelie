@@ -131,12 +131,15 @@ jobs:
           done
           if [ -n "${UPLOADED}" ]; then
               echo -e "**** Uploaded wheels are: **** ${UPLOADED}"
+              echo "PUBLISH=true" >> $GITHUB_ENV
           else
               echo "No wheels were uploaded"
+              echo "PUBLISH=false" >> $GITHUB_ENV
           fi
 
       - name: Publish packages
         uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ env.PUBLISH }}
         with:
           user: ${{ secrets.PY_REPO_USER }}
           password: ${{ secrets.PY_REPO_PW }}
@@ -145,6 +148,7 @@ jobs:
           skip-existing: true
 
       - name: Updating git repo as necessary
+        if: ${{ env.PUBLISH }}
         run: |
           echo "updating git repo as necessary"
           cd ./temp

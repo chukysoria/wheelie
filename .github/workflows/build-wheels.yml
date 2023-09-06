@@ -138,6 +138,8 @@ jobs:
           user: ${{ secrets.PY_REPO_USER }}
           password: ${{ secrets.PY_REPO_PW }}
           repository-url: ${{ env.PY_REPO_URL}}
+          verify-metadata: false
+          skip-existing: true
 
       - name: Updating git repo as necessary
         run: |

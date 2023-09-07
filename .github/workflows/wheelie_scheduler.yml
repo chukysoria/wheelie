@@ -1,8 +1,8 @@
 name: Wheelie Scheduler
 
 on:
-  #schedule:
-  #  - cron:  '00 * * * *'
+  schedule:
+    - cron:  '00 1 * * *'
   workflow_dispatch:
 
 jobs:

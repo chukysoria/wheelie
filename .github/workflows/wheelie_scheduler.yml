@@ -79,9 +79,6 @@ jobs:
                 echo "**** ${PACKAGE}-${VERSION}-${CPYTHON}-${ARCH} wheel already built for ${DISTRO}, skipping ****"
               fi
             done
-            if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
-              break
-            fi
           done
           if [ -n "$PACKAGES" ]; then
             echo "$PACKAGES" >> ./packages_to_install.txt

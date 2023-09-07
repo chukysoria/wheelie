@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         ARCH: ["ARMHF-WHEELIE-CHROOT"]
-        DISTRO: [alpine-3.17, alpine-3.18]
+        DISTRO: [alpine-3.17, alpine-3.18, ubuntu-jammy]
 
     steps:
       - name: Prepare variables

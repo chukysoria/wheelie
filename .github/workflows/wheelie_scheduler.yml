@@ -11,18 +11,27 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            packages.txt
+            distros.txt
+          sparse-checkout-cone-mode: false
       
       - name: Export packages and distros
+        id: variables
         run: |
-          echo "ALLPACKAGES=$( tr '\n' ' ' < packages.txt)" >> $GITHUB_ENV
-          echo "TAGS=$((sed -r 's/-/:/g' | jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_ENV
+          echo "ALLPACKAGES=$( tr '\n' ' ' < packages.txt)" >> $GITHUB_OUTPUT
+          echo "TAGS=$((sed -r 's/-/:/g' | jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_OUTPUT
     outputs:
-      ALLPACKAGES: ${{ env.ALLPACKAGES }}
-      TAGS: ${{ env.TAGS }}
+      ALLPACKAGES: ${{ steps.variables.outputs.ALLPACKAGES }}
+      TAGS: ${{ steps.variables.outputs.TAGS }}
 
   run-containers:
     needs: get-variables
     runs-on: ubuntu-latest
+    env:
+      DISTRO:
+      FILE_PATH: ./packages_to_install.txt
     strategy:
       matrix:
         TAG: ${{ fromJson(needs.get-variables.outputs.TAGS) }}
@@ -30,13 +39,16 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docs
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
           platforms: arm
 
-      - name: Run container     
+      - name: Run container 
         run: |
           DISTRO="$(echo '${{ matrix.TAG }}' | sed -r 's/:/-/g')"
           echo "DISTRO=$DISTRO" >> $GITHUB_ENV
@@ -44,7 +56,7 @@ jobs:
 
       - name: Install dependencies        
         run: |
-          docker exec ${{ env.DISTRO }} bash -c "\
+          docker exec $DISTRO bash -c "\
             if [ -f /usr/bin/apt ]; then \
               apt-get update && apt-get install -y python3-venv; \
             else \
@@ -55,8 +67,8 @@ jobs:
             /lsiopy/bin/pip install -U pip"
 
       - name: Check packages
+        id: check-packages
         run: |
-          DISTRO=${{ env.DISTRO }}
           IMAGE=$(echo ${DISTRO} | awk -F'-' '{print $1}')
           TAG=$(echo ${DISTRO} | awk -F'-' '{print $2}')
           if [ "${IMAGE}" = "alpine" ]; then
@@ -81,20 +93,24 @@ jobs:
             done
           done
           if [ -n "$PACKAGES" ]; then
-            echo "$PACKAGES" >> ./packages_to_install.txt
+            echo "$PACKAGES" >> ${{ env.FILE_PATH }}
+            echo "UPLOAD=true" >> $GITHUB_OUTPUT
           else
             echo "**** No new updates to any of the packages for ${DISTRO}****"
           fi
         
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
+        if: ${{ steps.check-packages.outputs.UPLOAD }}
         with:
           name: ${{ env.DISTRO }}
-          path: ./packages_to_install.txt
+          path: ${{ env.FILE_PATH }}
 
   merge-artifacts:
     needs: run-containers
     runs-on: ubuntu-latest
+    env:
+      folder: ./artifacts
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -102,13 +118,17 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          path: ./artifacts
+          path: ${{ env.folder }}
       
       - name: Merge packages, removing duplicates
+        id: merge-packages
         run: |
-          echo "PACKAGES=$(find ./artifacts -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> $GITHUB_ENV
+          if [[ -d ${{ env.folder }} ]]; then
+            echo "PACKAGES=$(find .${{ env.folder }} -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> $GITHUB_OUPUT
+          fi
+
     outputs:
-      PACKAGES: ${{ env.PACKAGES }}
+      PACKAGES: ${{ steps.merge-packages.outputs.PACKAGES }}
   
   build-wheels:
     needs: merge-artifacts

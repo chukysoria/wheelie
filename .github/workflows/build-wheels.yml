@@ -23,24 +23,25 @@ jobs:
   build-multi:
     name: Build ${{ matrix.ARCH }} - ${{ matrix.DISTRO }} 
     runs-on: ubuntu-latest
+    env:
+      DISTRONAME:
+      DISTROVER:
+      PLATFORM:
     strategy:
       matrix:
-        ARCH: ["ARMHF-WHEELIE-CHROOT"]
+        ARCH: ["arm32v7"]
         DISTRO: [alpine-3.17, alpine-3.18, ubuntu-jammy]
 
     steps:
-      - name: Prepare variables
+      - name: Prepare environment variables
         run: |
           echo "DISTRONAME=$(echo ${{ matrix.DISTRO }} | sed 's|-.*||')" >> $GITHUB_ENV
           echo "DISTROVER=$(echo ${{ matrix.DISTRO }} | sed 's|.*-||')" >> $GITHUB_ENV 
-          if [ "${{ matrix.ARCH }}" == "X86-64-MULTI" ]; then
-              echo "ARCH=amd64" >> $GITHUB_ENV
+          if [ "${{ matrix.ARCH }}" == "amd64" ]; then
               echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
-          elif [ "${{ matrix.ARCH }}" == "ARM64" ]; then
-              echo "ARCH=arm64v8" >> $GITHUB_ENV
+          elif [ "${{ matrix.ARCH }}" == "arm64v8" ]; then
               echo "PLATFORM=linux/arm64" >> $GITHUB_ENV
           else
-              echo "ARCH=arm32v7" >> $GITHUB_ENV
               echo "PLATFORM=linux/arm/v7" >> $GITHUB_ENV
           fi
 
@@ -62,35 +63,36 @@ jobs:
           platforms: ${{ env.PLATFORM }}
           push: true
           pull: true
-          tags: ghcr.io/chukysoria/wheelie:${{ env.ARCH }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
+          tags: ghcr.io/chukysoria/wheelie:${{ matrix.ARCH }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
           build-args: |
             DISTRO=${{ env.DISTRONAME }}
             DISTROVER=${{ env.DISTROVER }}
-            ARCH=${{ env.ARCH }}
+            ARCH=${{ matrix.ARCH }}
             PACKAGES=${{ inputs.PACKAGES }}
   
       - name: Retrieve artifacts
+        id: retrieve-artifacts
         run: |
           if echo "${{ matrix.DISTRO }}" | grep ubuntu; then
               mkdir -p builds/build-ubuntu
-              echo "ARTIFACT-NAME=build-ubuntu" >> $GITHUB_ENV
+              echo "ARTIFACT-NAME=build-ubuntu" >> $GITHUB_OUTPUT
           else
               mkdir -p builds/build-${{ matrix.DISTRO }}
-              echo "ARTIFACT-NAME=build-${{ matrix.DISTRO }}" >> $GITHUB_ENV
+              echo "ARTIFACT-NAME=build-${{ matrix.DISTRO }}" >> $GITHUB_OUTPUT
           fi
-          echo "**** Retrieving wheels for ${{ env.ARCH }}-${{ matrix.DISTRO }} ****"
-          docker create --name ${{ env.ARCH }}-${{ matrix.DISTRO }} ghcr.io/chukysoria/wheelie:${{ env.ARCH }}-${{ matrix.DISTRO }} blah
+          echo "**** Retrieving wheels for ${{ matrix.ARCH }}-${{ matrix.DISTRO }} ****"
+          docker create --name ${{ matrix.ARCH }}-${{ matrix.DISTRO }} ghcr.io/chukysoria/wheelie:${{ matrix.ARCH }}-${{ matrix.DISTRO }} blah
           if echo ${{ matrix.DISTRO }} | grep alpine; then
-              docker cp ${{ env.ARCH }}-${{ matrix.DISTRO }}:/build/. builds/build-${{ matrix.DISTRO }}/
+              docker cp ${{ matrix.ARCH }}-${{ matrix.DISTRO }}:/build/. builds/build-${{ matrix.DISTRO }}/
           else
-              docker cp ${{ env.ARCH }}-${{ matrix.DISTRO }}:/build/. builds/build-ubuntu/
+              docker cp ${{ matrix.ARCH }}-${{ matrix.DISTRO }}:/build/. builds/build-ubuntu/
           fi
       
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.ARTIFACT-NAME }}
-          path:  ${{ github.workspace }}/builds/${{ env.ARTIFACT-NAME }}/*
+          name: ${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}
+          path: ${{ github.workspace }}/builds/${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}/*
       
 
   publish-artifacts:
@@ -110,6 +112,7 @@ jobs:
           path: ./builds
 
       - name: Check wheels created
+        id: check-wheels
         run: |
           echo "pushing wheels as necessary"
           mkdir dist
@@ -127,15 +130,14 @@ jobs:
           done
           if [ -n "${UPLOADED}" ]; then
               echo -e "**** Uploaded wheels are: **** ${UPLOADED}"
-              echo "PUBLISH=true" >> $GITHUB_ENV
+              echo "PUBLISH=true" >> $GITHUB_OUTPUT
           else
               echo "No wheels were uploaded"
-              echo "PUBLISH=false" >> $GITHUB_ENV
           fi
 
       - name: Publish packages
         uses: pypa/gh-action-pypi-publish@release/v1
-        if: ${{ env.PUBLISH }}
+        if: ${{ steps.check-wheels.outputs.PUBLISH }}
         with:
           user: ${{ secrets.PY_REPO_USER }}
           password: ${{ secrets.PY_REPO_PW }}
@@ -144,7 +146,7 @@ jobs:
           skip-existing: true
 
       - name: Updating git repo as necessary
-        if: ${{ env.PUBLISH }}
+        if: ${{ steps.check-wheels.outputs.PUBLISH }}
         run: |
           echo "updating git repo as necessary"
           cd ./temp

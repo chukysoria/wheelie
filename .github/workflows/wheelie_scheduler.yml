@@ -124,7 +124,7 @@ jobs:
         id: merge-packages
         run: |
           if [[ -d ${{ env.folder }} ]]; then
-            echo "PACKAGES=$(find ${{ env.folder }} -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> $GITHUB_OUPUT
+            echo "PACKAGES=$(find ${{ env.folder }} -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> "$GITHUB_OUPUT"
           fi
 
     outputs:

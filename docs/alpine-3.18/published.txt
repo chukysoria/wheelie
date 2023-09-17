@@ -2,3 +2,6 @@ cffi-1.15.1-cp311-cp311-musllinux_1_2_armv7l.whl
 ninja-1.11.1-cp311-cp311-musllinux_1_2_armv7l.whl
 ninja-1.11.1-py2.py3-none-musllinux_1_1_aarch64.whl
 ninja-1.11.1-py2.py3-none-musllinux_1_1_x86_64.whl
+lxml-4.9.3-cp311-cp311-musllinux_1_1_aarch64.whl
+lxml-4.9.3-cp311-cp311-musllinux_1_1_x86_64.whl
+lxml-4.9.3-cp311-cp311-musllinux_1_2_armv7l.whl

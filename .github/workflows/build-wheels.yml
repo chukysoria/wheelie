@@ -77,11 +77,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🚀 BBuild and push
+      - name: 🚀 Build
         uses: docker/build-push-action@v5
         with:
           platforms: ${{ steps.flags.outputs.platform }}
-          push: true
           load: true
           cache-from: |
             type=local,src=/tmp/.docker-cache
@@ -92,7 +91,22 @@ jobs:
             DISTROVER=${{ env.DISTROVER }}
             ARCH=${{ matrix.architecture }}
             PACKAGES=${{ inputs.PACKAGES }}
-  
+
+      - name: 🚀 Push
+        uses: docker/build-push-action@v5
+        with:
+          platforms: ${{ steps.flags.outputs.platform }}
+          push: true
+          cache-from: |
+            type=local,src=/tmp/.docker-cache
+            ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
+          tags: ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
+          build-args: |
+            DISTRO=${{ env.DISTRONAME }}
+            DISTROVER=${{ env.DISTROVER }}
+            ARCH=${{ matrix.architecture }}
+            PACKAGES=${{ inputs.PACKAGES }}
+
       - name: 🚀 Retrieve artifacts
         id: retrieve-artifacts
         run: |

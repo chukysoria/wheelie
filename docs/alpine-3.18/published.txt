@@ -15,3 +15,4 @@ zope.interface-6.0-cp311-cp311-linux_armv7l.whl
 webrtcvad_wheels-2.0.11.post1-cp311-cp311-linux_armv7l.whl
 webrtcvad-2.0.10-cp311-cp311-linux_armv7l.whl
 grpcio-1.58.0-cp311-cp311-linux_armv7l.whl
+cffi-1.15.1-cp311-cp311-musllinux_1_2_armv7l.whl

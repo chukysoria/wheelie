@@ -72,7 +72,9 @@ RUN \
   fi && \
   python3 -m venv /build-env && \
   . /build-env/bin/activate && \
-  pip install -U pip setuptools wheel "cython<3" auditwheel && \
+  pip install -U pip setuptools wheel "cython<3" auditwheel
+
+RUN \
   mkdir -p /build && \
   if [ -z "${PACKAGES}" ]; then \
     PACKAGES=$(cat /packages.txt); \
@@ -101,7 +103,7 @@ RUN \
       *"musllinux"*|*"none-any"*) \
         mv "${wheel_file}" "/build-repaired/" ;; \
       *) \
-        auditwheel repair -w "/build-repaired" "${wheel_file}" ;; \
+        auditwheel repair -w "/build-repaired" "${wheel_file}" || mv "${wheel_file}" "/build-repaired/";; \
     esac; \
   done && \
   echo "**** Wheels to export are: ****" && \

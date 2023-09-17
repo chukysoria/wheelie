@@ -28,7 +28,7 @@ jobs:
       DISTROVER:
     strategy:
       matrix:
-        architecture: ["armv7"]
+        architecture: ["armv7, x86_64, aarch64"]
         DISTRO: [alpine-3.17, alpine-3.18, ubuntu-jammy]
 
     steps:

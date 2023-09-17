@@ -7,7 +7,6 @@ FROM ghcr.io/chukysoria/baseimage-${DISTRO}:${ARCH}-${DISTROVER} as builder
 ARG DISTRO
 ARG DISTROVER
 ARG ARCH
-ARG PACKAGES
 
 # grpcio build args
 ARG GRPC_BUILD_WITH_BORING_SSL_ASM=false
@@ -74,6 +73,7 @@ RUN \
   . /build-env/bin/activate && \
   pip install -U pip setuptools wheel "cython<3" auditwheel
 
+ARG PACKAGES
 RUN \
   . /build-env/bin/activate && \
   mkdir -p /build && \

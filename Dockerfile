@@ -14,8 +14,6 @@ ARG GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true
 ARG GRPC_PYTHON_BUILD_WITH_CYTHON=true 
 ARG GRPC_PYTHON_DISABLE_LIBC_COMPATIBILITY=true
 
-COPY packages.txt /packages.txt
-
 RUN \
   echo "**** Installing dependencies ****" && \
   if [ -f /usr/bin/apt ]; then \
@@ -74,6 +72,7 @@ RUN \
   pip install -U pip setuptools wheel "cython<3" auditwheel
 
 ARG PACKAGES
+COPY packages.txt /packages.txt
 RUN \
   . /build-env/bin/activate && \
   mkdir -p /build && \

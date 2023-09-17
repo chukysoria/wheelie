@@ -86,13 +86,15 @@ RUN \
     GRPCIOSKIP=""; \
   fi && \
   if [ "${ARCH}" = "arm32v7" ]; then \
-    WRAPTNATIVE="--no-binary wrapt"; \
+    WRAPTNATIVE="--no-binary wrapt" && \
+    NUMPYBLAS='--config-settings=setup-args="-Dallow-noblas=true"' ; \
   else \
-    WRAPTNATIVE=""; \
+    WRAPTNATIVE="" && \
+    NUMPYBLAS=""; \
   fi && \
   pip wheel --wheel-dir=/build --extra-index-url="https://gitlab.com/api/v4/projects/49075787/packages/pypi/simple" \
   --no-cache-dir -v ${GRPCIOSKIP} ${WRAPTNATIVE} \
-    ${PACKAGES} && \
+    $NUMPYBLAS ${PACKAGES} && \
   echo "**** Wheels built are: ****" && \
   ls /build && \
   echo "**** Reparing built wheels ****" && \

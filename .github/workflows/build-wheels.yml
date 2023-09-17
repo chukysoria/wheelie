@@ -85,6 +85,7 @@ jobs:
           cache-from: |
             type=local,src=/tmp/.docker-cache
             ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
+          cache-to: type=local,mode=max,dest=/tmp/.docker-cache-new 
           tags: ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
           build-args: |
             DISTRO=${{ env.DISTRONAME }}
@@ -98,7 +99,7 @@ jobs:
           platforms: ${{ steps.flags.outputs.platform }}
           push: true
           cache-from: |
-            type=local,src=/tmp/.docker-cache
+            type=local,src=/tmp/.docker-cache-new
             ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
           tags: ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
           build-args: |

@@ -75,6 +75,7 @@ RUN \
   pip install -U pip setuptools wheel "cython<3" auditwheel
 
 RUN \
+  . /build-env/bin/activate && \
   mkdir -p /build && \
   if [ -z "${PACKAGES}" ]; then \
     PACKAGES=$(cat /packages.txt); \

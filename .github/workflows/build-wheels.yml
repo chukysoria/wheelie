@@ -21,56 +21,79 @@ on:
 
 jobs:
   build-multi:
-    name: Build ${{ matrix.ARCH }} - ${{ matrix.DISTRO }} 
+    name: 👷 Build ${{ matrix.architecture }} - ${{ matrix.DISTRO }} 
     runs-on: ubuntu-latest
     env:
       DISTRONAME:
       DISTROVER:
-      PLATFORM:
     strategy:
       matrix:
-        ARCH: ["armv7"]
+        architecture: ["armv7"]
         DISTRO: [alpine-3.17, alpine-3.18, ubuntu-jammy]
 
     steps:
-      - name: Prepare environment variables
+      - name: ℹ️ Compose build flags
+        id: flags
         run: |
           echo "DISTRONAME=$(echo ${{ matrix.DISTRO }} | sed 's|-.*||')" >> $GITHUB_ENV
           echo "DISTROVER=$(echo ${{ matrix.DISTRO }} | sed 's|.*-||')" >> $GITHUB_ENV 
-          if [ "${{ matrix.ARCH }}" == "amd64" ]; then
-              echo "PLATFORM=linux/amd64" >> $GITHUB_ENV
-          elif [ "${{ matrix.ARCH }}" == "arm64v8" ]; then
-              echo "PLATFORM=linux/arm64" >> $GITHUB_ENV
+          
+          if [[ "${{ matrix.architecture }}" = "amd64" || "${{ matrix.architecture }}" = "x86_64" ]]; then
+            echo "platform=linux/amd64" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ matrix.architecture }}" = "i386" ]]; then
+            echo "platform=linux/386" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ matrix.architecture }}" = "armhf" ]]; then
+            echo "platform=linux/arm/v6" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ matrix.architecture }}" = "armv7" ]]; then
+            echo "platform=linux/arm/v7" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ matrix.architecture }}" = "aarch64" ]]; then
+            echo "platform=linux/arm64/v8" >> "$GITHUB_OUTPUT"
           else
-              echo "PLATFORM=linux/arm/v7" >> $GITHUB_ENV
+            echo "::error ::Could not determine platform for architecture ${{ matrix.architecture }}"
+            exit 1
           fi
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      - name: 🏗 Restore build cache
+        id: cache
+        uses: actions/cache@v3.3.2
         with:
-          platforms: arm
+          path: /tmp/.docker-cache
+          key: docker-${{ matrix.DISTRO }}-${{ matrix.architecture }}-${{ github.sha }}
+          restore-keys: |
+            docker-${{ matrix.DISTRO }}-${{ matrix.architecture }} 
+  
+      - name: 🏗 Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      - name: 🏗 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: ${{ steps.flags.outputs.platform }}
+
+      - name: 🏗 Login to Github Container Repo
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v4
+      - name: 🚀 BBuild and push
+        uses: docker/build-push-action@v5
         with:
-          platforms: ${{ env.PLATFORM }}
+          platforms: ${{ steps.flags.outputs.platform }}
           push: true
-          pull: true
-          tags: ghcr.io/chukysoria/wheelie:${{ matrix.ARCH }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
+          load: true
+          cache-from: |
+            type=local,src=/tmp/.docker-cache
+            ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
+          tags: ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ env.DISTRONAME }}-${{ env.DISTROVER }}
           build-args: |
             DISTRO=${{ env.DISTRONAME }}
             DISTROVER=${{ env.DISTROVER }}
-            ARCH=${{ matrix.ARCH }}
+            ARCH=${{ matrix.architecture }}
             PACKAGES=${{ inputs.PACKAGES }}
   
-      - name: Retrieve artifacts
+      - name: 🚀 Retrieve artifacts
         id: retrieve-artifacts
         run: |
           if echo "${{ matrix.DISTRO }}" | grep ubuntu; then
@@ -80,38 +103,47 @@ jobs:
               mkdir -p builds/build-${{ matrix.DISTRO }}
               echo "ARTIFACT-NAME=build-${{ matrix.DISTRO }}" >> $GITHUB_OUTPUT
           fi
-          echo "**** Retrieving wheels for ${{ matrix.ARCH }}-${{ matrix.DISTRO }} ****"
-          docker create --name ${{ matrix.ARCH }}-${{ matrix.DISTRO }} ghcr.io/chukysoria/wheelie:${{ matrix.ARCH }}-${{ matrix.DISTRO }} blah
+          echo "**** Retrieving wheels for ${{ matrix.architecture }}-${{ matrix.DISTRO }} ****"
+          docker create --name ${{ matrix.architecture }}-${{ matrix.DISTRO }} ghcr.io/chukysoria/wheelie:${{ matrix.architecture }}-${{ matrix.DISTRO }} blah
           if echo ${{ matrix.DISTRO }} | grep alpine; then
-              docker cp ${{ matrix.ARCH }}-${{ matrix.DISTRO }}:/build/. builds/build-${{ matrix.DISTRO }}/
+              docker cp ${{ matrix.architecture }}-${{ matrix.DISTRO }}:/build/. builds/build-${{ matrix.DISTRO }}/
           else
-              docker cp ${{ matrix.ARCH }}-${{ matrix.DISTRO }}:/build/. builds/build-ubuntu/
+              docker cp ${{ matrix.architecture }}-${{ matrix.DISTRO }}:/build/. builds/build-ubuntu/
           fi
       
-      - name: Upload Artifact
+      - name: 🚀 Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}
           path: ${{ github.workspace }}/builds/${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}/*
-      
+     
+      # This ugly bit is necessary, or our cache will grow forever...
+      # Well until we hit GitHub's limit of 5GB :)
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: 🚚 Swap build cache
+        if: ${{ github.event_name != 'release' }}
+        run: |
+          rm -rf /tmp/.docker-cache
+          mv /tmp/.docker-cache-new /tmp/.docker-cache
 
   publish-artifacts:
-    name: Publish artifacts
+    name: 👷Publish artifacts
     runs-on: ubuntu-latest
     needs: build-multi
     steps:
-      - name: Checkout to temp folder
+      - name: ⤵️ Checkout to temp folder
         uses: actions/checkout@v4
         with:
           ref: main
           path: temp
       
-      - name: Download artifacts
+      - name: ⤵️ Download artifacts
         uses: actions/download-artifact@v3
         with:
           path: ./builds
 
-      - name: Check wheels created
+      - name: 🚀 Check wheels created
         id: check-wheels
         run: |
           echo "pushing wheels as necessary"
@@ -135,7 +167,7 @@ jobs:
               echo "No wheels were uploaded"
           fi
 
-      - name: Publish packages
+      - name: 🚀 Publish packages
         uses: pypa/gh-action-pypi-publish@release/v1
         if: ${{ steps.check-wheels.outputs.PUBLISH }}
         with:
@@ -145,7 +177,7 @@ jobs:
           verify-metadata: false
           skip-existing: true
 
-      - name: Updating git repo as necessary
+      - name: 🚀 Updating git repo as necessary
         if: ${{ steps.check-wheels.outputs.PUBLISH }}
         run: |
           echo "updating git repo as necessary"

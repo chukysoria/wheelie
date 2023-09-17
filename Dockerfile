@@ -35,6 +35,7 @@ RUN \
       libxml2-dev \
       libxslt1-dev \
       make \
+      patchelf \
       python3-dev \
       python3-pip \
       python3-venv \
@@ -57,6 +58,7 @@ RUN \
       make \
       musl-dev \
       openssl-dev \
+      patchelf \
       pkgconfig \
       py3-pip \
       python3-dev \
@@ -70,7 +72,7 @@ RUN \
   fi && \
   python3 -m venv /build-env && \
   . /build-env/bin/activate && \
-  pip install -U pip setuptools wheel "cython<3" && \
+  pip install -U pip setuptools wheel "cython<3" auditwheel && \
   mkdir -p /build && \
   if [ -z "${PACKAGES}" ]; then \
     PACKAGES=$(cat /packages.txt); \
@@ -87,11 +89,24 @@ RUN \
     WRAPTNATIVE=""; \
   fi && \
   pip wheel --wheel-dir=/build --extra-index-url="https://gitlab.com/api/v4/projects/49075787/packages/pypi/simple" \
-  --find-links="https://wheel-index.linuxserver.io/${INDEXDISTRO}/" --no-cache-dir -v ${GRPCIOSKIP} ${WRAPTNATIVE} \
+  --no-cache-dir -v ${GRPCIOSKIP} ${WRAPTNATIVE} \
     ${PACKAGES} && \
   echo "**** Wheels built are: ****" && \
-  ls /build
+  ls /build && \
+  echo "**** Reparing built wheels ****" && \
+  mkdir -p /build-repaired && \
+  WHEEL_FILES="$(ls /build/*)"; \
+  for wheel_file in ${WHEEL_FILES}; do \
+    case "${wheel_file}" in \
+      *"musllinux"*|*"none-any"*) \
+        mv "${wheel_file}" "/build-repaired/" ;; \
+      *) \
+        auditwheel repair -w "/build-repaired" "${wheel_file}" ;; \
+    esac; \
+  done && \
+  echo "**** Wheels to export are: ****" && \
+  ls /build-repaired
 
 FROM scratch as artifacts
 
-COPY --from=builder /build /build
+COPY --from=builder /build-repaired /build

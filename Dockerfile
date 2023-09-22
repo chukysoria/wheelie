@@ -79,22 +79,28 @@ RUN \
   if [ -z "${PACKAGES}" ]; then \
     PACKAGES=$(cat /packages.txt); \
   fi && \
-  # ignore official arm32v7 wheel of grpcio and wrapt
-  if [ "${DISTRO}" = "alpine" ] && [ "${ARCH}" = "arm32v7" ]; then \
-    GRPCIOSKIP="--no-binary grpcio"; \
-  else \
-    GRPCIOSKIP=""; \
-  fi && \
-  if [ "${ARCH}" = "arm32v7" ]; then \
-    WRAPTNATIVE="--no-binary wrapt" && \
-    NUMPYBLAS='--config-settings=setup-args="-Dallow-noblas=true"' ; \
-  else \
-    WRAPTNATIVE="" && \
-    NUMPYBLAS=""; \
-  fi && \
-  pip wheel --wheel-dir=/build --extra-index-url="https://gitlab.com/api/v4/projects/49075787/packages/pypi/simple" \
-  --no-cache-dir -v ${GRPCIOSKIP} ${WRAPTNATIVE} \
-    $NUMPYBLAS ${PACKAGES} && \
+  for PACKAGE in "${PACKAGES}"; do \
+    # ignore official arm32v7 wheel of grpcio and wrapt
+    if [ "${DISTRO}" = "alpine" ] && [ "${ARCH}" = "arm32v7" ]; then \
+      GRPCIOSKIP="--no-binary grpcio"; \
+    else \
+      GRPCIOSKIP=""; \
+    fi && \
+    if [ "${ARCH}" = "arm32v7" ]; then \
+      WRAPTNATIVE="--no-binary wrapt"; \
+    else \
+      WRAPTNATIVE=""; \
+    fi && \
+    if echo "${PACKAGE}" | grep -q numpy; then \
+      echo "**** Setting numpy build flag ****" && \
+      BUILD_FLAG='--config-settings=setup-args=-Dallow-noblas=true'; \
+    fi && \
+    echo "**** Building ${PACKAGE} ****" && \
+    pip wheel --wheel-dir=/build --extra-index-url="https://gitlab.com/api/v4/projects/49075787/packages/pypi/simple" \
+    --find-links="https://wheel-index.linuxserver.io/${INDEXDISTRO}/" --no-cache-dir \
+    -v ${GRPCIOSKIP} ${WRAPTNATIVE} ${BUILD_FLAG} \
+    ${PACKAGE}; \
+  done && \
   echo "**** Wheels built are: ****" && \
   ls /build && \
   echo "**** Reparing built wheels ****" && \

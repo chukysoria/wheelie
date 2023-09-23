@@ -13,3 +13,4 @@ wrapt
 ninja
 webrtcvad
 psycopg2_binary
+webrtcvad-wheels

@@ -27,6 +27,7 @@ RUN \
       libffi-dev \
       libglib2.0-dev \
       libjpeg-dev \
+      libpq-dev \
       libssl-dev \
       libwebp-dev \
       libxml2-dev \
@@ -56,6 +57,7 @@ RUN \
       musl-dev \
       openssl-dev \
       patchelf \
+      postgresql-dev \
       pkgconfig \
       py3-pip \
       python3-dev \

@@ -43,3 +43,4 @@ cffi-1.15.1-cp311-cp311-musllinux_1_2_aarch64.whl
 PyYAML-6.0.1-cp311-cp311-linux_aarch64.whl
 bluepy-1.3.0-cp311-cp311-linux_aarch64.whl
 PyWavelets-1.4.1-cp311-cp311-musllinux_1_2_aarch64.whl
+pandas-2.1.1-cp311-cp311-musllinux_1_2_aarch64.whl

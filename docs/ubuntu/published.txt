@@ -48,3 +48,6 @@ wrapt-1.15.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x
 psycopg2_binary-2.9.7-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
 psycopg2_binary-2.9.7-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 psycopg2_binary-2.9.7-cp310-cp310-linux_armv7l.whl
+webrtcvad_wheels-2.0.11.post1-cp310-cp310-linux_armv7l.whl
+webrtcvad_wheels-2.0.11.post1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+webrtcvad_wheels-2.0.11.post1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl

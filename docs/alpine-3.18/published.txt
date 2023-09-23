@@ -37,3 +37,4 @@ webrtcvad-2.0.10-cp311-cp311-musllinux_1_2_armv7l.whl
 webrtcvad-2.0.10-cp311-cp311-musllinux_1_2_x86_64.whl
 wrapt-1.15.0-cp311-cp311-musllinux_1_1_x86_64.whl
 wrapt-1.15.0-cp311-cp311-musllinux_1_1_aarch64.whl
+webrtcvad-2.0.10-cp311-cp311-musllinux_1_2_aarch64.whl

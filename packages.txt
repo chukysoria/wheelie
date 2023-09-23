@@ -12,3 +12,4 @@ PyWavelets
 wrapt
 ninja
 webrtcvad
+psycopg2_binary

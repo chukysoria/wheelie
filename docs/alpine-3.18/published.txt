@@ -57,3 +57,6 @@ cffi-1.16.0-cp311-cp311-musllinux_1_2_armv7l.whl
 psycopg2_binary-2.9.8-cp311-cp311-musllinux_1_1_aarch64.whl
 psycopg2_binary-2.9.8-cp311-cp311-musllinux_1_1_x86_64.whl
 psycopg2_binary-2.9.8-cp311-cp311-musllinux_1_2_armv7l.whl
+grpcio-1.59.0-cp311-cp311-linux_armv7l.whl
+grpcio-1.59.0-cp311-cp311-musllinux_1_1_x86_64.whl
+grpcio-1.59.0-cp311-cp311-musllinux_1_2_aarch64.whl

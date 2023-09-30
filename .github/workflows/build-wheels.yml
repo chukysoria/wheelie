@@ -150,13 +150,13 @@ jobs:
     needs: build-multi
     steps:
       - name: ⤵️ Checkout to temp folder
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v4.1.0
         with:
           ref: main
           path: temp
       
       - name: ⤵️ Download artifacts
-        uses: actions/download-artifact@v3.0.0
+        uses: actions/download-artifact@v3.0.2
         with:
           path: ./builds
 

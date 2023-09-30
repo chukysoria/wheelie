@@ -96,7 +96,7 @@ jobs:
           if [ -n "$PACKAGES" ]; then
             echo "$PACKAGES" >> ${{ env.FILE_PATH }}
             echo "UPLOAD=true" >> $GITHUB_OUTPUT
-            echo "Packages to build for ${{ steps.run-container.outputs.DISTRO }}: $PACKAGES" >> GITHUB_STEP_SUMMARY
+            echo "Packages to build for ${{ steps.run-container.outputs.DISTRO }}: $PACKAGES" >> $GITHUB_STEP_SUMMARY
           else
             echo "**** No new updates to any of the packages for ${{ steps.run-container.outputs.DISTRO }} ****"
           fi
@@ -125,9 +125,9 @@ jobs:
         run: |
           if [[ -d ${{ env.folder }} ]]; then
             echo "PACKAGES=$(find ${{ env.folder }} -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
-            echo "Packages to build are: $PACKAGES" >> GITHUB_STEP_SUMMARY
+            echo "Packages to build are: $PACKAGES" >> $GITHUB_STEP_SUMMARY
           else
-            echo "No new packages to build" >> GITHUB_STEP_SUMMARY
+            echo "No new packages to build" >> $GITHUB_STEP_SUMMARY
           fi
 
     outputs:

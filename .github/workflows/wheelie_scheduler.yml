@@ -7,56 +7,64 @@ on:
 
 jobs:
   get-variables:
+    name: 👷 Get packages and distros
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
+      - name: ⤵️ Check out repo
+        uses: actions/checkout@v4.1.0
         with:
           sparse-checkout: |
             packages.txt
             distros.txt
           sparse-checkout-cone-mode: false
       
-      - name: Export packages and distros
+      - name:  ℹ️ Export packages and distros
         id: variables
         run: |
           echo "ALLPACKAGES=$( tr '\n' ' ' < packages.txt)" >> $GITHUB_OUTPUT
           echo "TAGS=$((sed -r 's/-/:/g' | jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_OUTPUT
+    
     outputs:
       ALLPACKAGES: ${{ steps.variables.outputs.ALLPACKAGES }}
       TAGS: ${{ steps.variables.outputs.TAGS }}
 
   run-containers:
+    name: 👷 Check new packages to build
     needs: get-variables
     runs-on: ubuntu-latest
     env:
-      DISTRO:
       FILE_PATH: ./packages_to_install.txt
     strategy:
       matrix:
         TAG: ${{ fromJson(needs.get-variables.outputs.TAGS) }}
 
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
+      - name: ⤵️ Check out repo
+        uses: actions/checkout@v4.1.0
         with:
           sparse-checkout: |
             docs
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      - name: 🏗 Run cache
+        id: cache
+        uses: actions/cache@v3.3.2
         with:
-          platforms: arm
+          path: /tmp/.docker-cache
+          key: docker-${{ github.sha }}
 
-      - name: Run container 
+      - name: 🏗 Set up QEMU
+        uses: docker/setup-qemu-action@v3.0.0
+
+      - name: 🚀 Run container
+        id: run-containter
         run: |
           DISTRO="$(echo '${{ matrix.TAG }}' | sed -r 's/:/-/g')"
-          echo "DISTRO=$DISTRO" >> $GITHUB_ENV
+          echo "DISTRO=$DISTRO" >> $GITHUB_OUTPUT
           docker run -d --rm --name $DISTRO ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
 
-      - name: Install dependencies        
+      - name: 🚀 Install dependencies        
         run: |
-          docker exec $DISTRO bash -c "\
+          docker exec ${{ steps.run-container.outputs.DISTRO }} bash -c "\
             if [ -f /usr/bin/apt ]; then \
               apt-get update && apt-get install -y python3-venv; \
             else \
@@ -66,71 +74,74 @@ jobs:
             python3 -m venv /lsiopy && \
             /lsiopy/bin/pip install -U pip"
 
-      - name: Check packages
+      - name: 🚀 Check packages
         id: check-packages
         run: |
-          IMAGE=$(echo ${DISTRO} | awk -F'-' '{print $1}')
-          TAG=$(echo ${DISTRO} | awk -F'-' '{print $2}')
+          IMAGE=$(echo ${{ steps.run-container.outputs.DISTRO }} | awk -F'-' '{print $1}')
+          TAG=$(echo ${{ steps.run-container.outputs.DISTRO }} | awk -F'-' '{print $2}')
           if [ "${IMAGE}" = "alpine" ]; then
-            OS="${DISTRO}"
+            OS="${{ steps.run-container.outputs.DISTRO }}"
           else
-            OS="${IMAGE}"
+            OS="${{ steps.run-container.outputs.DISTRO }}"
           fi          
-          CPYTHON=$(docker exec ${DISTRO} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")
+          CPYTHON=$(docker exec ${{ steps.run-container.outputs.DISTRO }} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")
           for PACKAGE in ${{ needs.get-variables.outputs.ALLPACKAGES }}; do
             if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
               break
             fi
-            VERSION=$(docker exec ${DISTRO} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
+            VERSION=$(docker exec ${{ steps.run-container.outputs.DISTRO }} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
             for ARCH in armv7l x86_64 aarch64; do
               if ! grep -q "${PACKAGE}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then
                 echo "**** Adding ${PACKAGE}-${VERSION} to build list ****"
                 PACKAGES="${PACKAGE} ${PACKAGES}"
                 break
               else
-                echo "**** ${PACKAGE}-${VERSION}-${CPYTHON}-${ARCH} wheel already built for ${DISTRO}, skipping ****"
+                echo "**** ${PACKAGE}-${VERSION}-${CPYTHON}-${ARCH} wheel already built for ${{ steps.run-container.outputs.DISTRO }}, skipping ****"
               fi
             done
           done
           if [ -n "$PACKAGES" ]; then
             echo "$PACKAGES" >> ${{ env.FILE_PATH }}
             echo "UPLOAD=true" >> $GITHUB_OUTPUT
+            echo "Packages to build for ${{ steps.run-container.outputs.DISTRO }}: $PACKAGES" >> GITHUB_STEP_SUMMARY
           else
-            echo "**** No new updates to any of the packages for ${DISTRO}****"
+            echo "**** No new updates to any of the packages for ${{ steps.run-container.outputs.DISTRO }} ****"
           fi
         
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+      - name: 🏗 Upload Artifact
+        uses: actions/upload-artifact@v3.1.3
         if: ${{ steps.check-packages.outputs.UPLOAD }}
         with:
-          name: ${{ env.DISTRO }}
+          name: ${{ steps.run-container.outputs.DISTRO }}
           path: ${{ env.FILE_PATH }}
 
   merge-artifacts:
+    name: 👷 Merge Artifacts
     needs: run-containers
     runs-on: ubuntu-latest
     env:
       folder: ./artifacts
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
+      - name: ⤵️ Download artifacts
+        uses: actions/download-artifact@v3.0.2
         with:
           path: ${{ env.folder }}
       
-      - name: Merge packages, removing duplicates
+      - name: ℹ️ Merge packages, removing duplicates
         id: merge-packages
         run: |
           if [[ -d ${{ env.folder }} ]]; then
             echo "PACKAGES=$(find ${{ env.folder }} -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+            echo "Packages to build are: $PACKAGES" >> GITHUB_STEP_SUMMARY
+          else:
+            echo "No new packages to build" >> GITHUB_STEP_SUMMARY
           fi
 
     outputs:
       PACKAGES: ${{ steps.merge-packages.outputs.PACKAGES }}
   
   build-wheels:
+    name: 👷 Build wheels
     needs: merge-artifacts
     if: ${{ needs.merge-artifacts.outputs.PACKAGES != '' }}
     uses: ./.github/workflows/build-wheels.yml

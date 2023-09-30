@@ -65,22 +65,22 @@ jobs:
             docker-${{ matrix.DISTRO }}-${{ matrix.architecture }} 
   
       - name: 🏗 Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v3.0.0
 
       - name: 🏗 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3.0.0
         with:
           platforms: ${{ steps.flags.outputs.platform }}
 
       - name: 🏗 Login to Github Container Repo
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.0.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5.0.0
         with:
           platforms: ${{ steps.flags.outputs.platform }}
           load: true
@@ -96,7 +96,7 @@ jobs:
             PACKAGES=${{ inputs.PACKAGES }}
 
       - name: 🚀 Push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5.0.0
         with:
           platforms: ${{ steps.flags.outputs.platform }}
           push: true
@@ -129,7 +129,7 @@ jobs:
           fi
       
       - name: 🚀 Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.0.0
         with:
           name: ${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}
           path: ${{ github.workspace }}/builds/${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}/*
@@ -150,13 +150,13 @@ jobs:
     needs: build-multi
     steps:
       - name: ⤵️ Checkout to temp folder
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.0.0
         with:
           ref: main
           path: temp
       
       - name: ⤵️ Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v3.0.0
         with:
           path: ./builds
 
@@ -178,14 +178,14 @@ jobs:
               done
           done
           if [ -n "${UPLOADED}" ]; then
-              echo -e "**** Uploaded wheels are: **** ${UPLOADED}"
+              echo -e "**** Uploaded wheels are: **** ${UPLOADED}" >> $GITHUB_STEP_SUMMARY
               echo "PUBLISH=true" >> $GITHUB_OUTPUT
           else
               echo "No wheels were uploaded"
           fi
 
       - name: 🚀 Publish packages
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@v1.8.10
         if: ${{ steps.check-wheels.outputs.PUBLISH }}
         with:
           user: ${{ secrets.PY_REPO_USER }}

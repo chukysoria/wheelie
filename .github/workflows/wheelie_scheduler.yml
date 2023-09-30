@@ -82,7 +82,7 @@ jobs:
           if [ "${IMAGE}" = "alpine" ]; then
             OS="${{ steps.run-container.outputs.DISTRO }}"
           else
-            OS="${{ steps.run-container.outputs.DISTRO }}"
+            OS="${IMAGE}"
           fi          
           CPYTHON=$(docker exec ${{ steps.run-container.outputs.DISTRO }} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")
           for PACKAGE in ${{ needs.get-variables.outputs.ALLPACKAGES }}; do
@@ -133,7 +133,7 @@ jobs:
           if [[ -d ${{ env.folder }} ]]; then
             echo "PACKAGES=$(find ${{ env.folder }} -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
             echo "Packages to build are: $PACKAGES" >> GITHUB_STEP_SUMMARY
-          else:
+          else
             echo "No new packages to build" >> GITHUB_STEP_SUMMARY
           fi
 

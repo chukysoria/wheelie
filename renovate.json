@@ -5,5 +5,5 @@
   "labels": ["dependencies", "no-stale"],
   "commitMessagePrefix": "⬆️",
   "commitMessageTopic": "{{depName}}",
-  "assignees": ["chukysoria"],
+  "assignees": ["chukysoria"]
 }

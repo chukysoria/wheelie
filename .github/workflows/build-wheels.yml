@@ -173,7 +173,7 @@ jobs:
                   cp  "./builds/build-${os}/${wheel}" "./dist"
                   echo ${wheel} >> "./temp/docs/${os}/published.txt"
               else
-                  echo "**** ${wheel} for ${os} already processed, skippng****"
+                  echo "**** ${wheel} for ${os} already processed, skipping****"
               fi
               done
           done

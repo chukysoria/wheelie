@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
       matrix:
         architecture: ["armv7", "x86_64", "aarch64"]
-        DISTRO: [alpine-3.17, alpine-3.18, ubuntu-jammy]
+        DISTRO: [alpine-3.18, ubuntu-jammy]
 
     steps:
       - name: ℹ️ Compose build flags

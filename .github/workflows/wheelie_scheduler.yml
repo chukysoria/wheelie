@@ -56,11 +56,10 @@ jobs:
         uses: docker/setup-qemu-action@v3.0.0
 
       - name: 🚀 Run container
-        id: run-containter
+        id: run-container
         run: |
           DISTRO="$(echo '${{ matrix.TAG }}' | sed -r 's/:/-/g')"
           echo "DISTRO=$DISTRO" >> $GITHUB_OUTPUT
-          echo "$GITHUB_OUTPUT"
           docker run -d --rm --name $DISTRO ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
 
       - name: 🚀 Install dependencies        

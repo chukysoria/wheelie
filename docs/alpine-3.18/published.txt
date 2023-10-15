@@ -66,3 +66,6 @@ psycopg2_binary-2.9.9-cp311-cp311-musllinux_1_2_armv7l.whl
 ninja-1.11.1.1-cp311-cp311-musllinux_1_2_armv7l.whl
 ninja-1.11.1.1-py2.py3-none-musllinux_1_1_aarch64.whl
 ninja-1.11.1.1-py2.py3-none-musllinux_1_1_x86_64.whl
+numpy-1.26.1-cp311-cp311-musllinux_1_1_x86_64.whl
+numpy-1.26.1-cp311-cp311-musllinux_1_2_aarch64.whl
+numpy-1.26.1-cp311-cp311-musllinux_1_2_armv7l.whl

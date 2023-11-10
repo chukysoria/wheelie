@@ -78,3 +78,5 @@ pandas-2.1.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 grpcio-1.59.2-cp310-cp310-linux_armv7l.whl
 grpcio-1.59.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
 grpcio-1.59.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+wrapt-1.16.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+wrapt-1.16.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl

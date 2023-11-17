@@ -80,7 +80,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Build
-        uses: docker/build-push-action@v5.0.0
+        uses: docker/build-push-action@v5.1.0
         with:
           platforms: ${{ steps.flags.outputs.platform }}
           load: true
@@ -96,7 +96,7 @@ jobs:
             PACKAGES=${{ inputs.PACKAGES }}
 
       - name: 🚀 Push
-        uses: docker/build-push-action@v5.0.0
+        uses: docker/build-push-action@v5.1.0
         with:
           platforms: ${{ steps.flags.outputs.platform }}
           push: true

@@ -95,3 +95,6 @@ pywavelets-1.5.0-cp311-cp311-musllinux_1_2_x86_64.whl
 grpcio-1.60.0-cp311-cp311-linux_armv7l.whl
 grpcio-1.60.0-cp311-cp311-musllinux_1_1_x86_64.whl
 grpcio-1.60.0-cp311-cp311-musllinux_1_2_aarch64.whl
+pandas-2.1.4-cp311-cp311-musllinux_1_1_x86_64.whl
+pandas-2.1.4-cp311-cp311-musllinux_1_2_aarch64.whl
+pandas-2.1.4-cp311-cp311-musllinux_1_2_armv7l.whl

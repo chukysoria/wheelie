@@ -126,8 +126,8 @@ jobs:
         id: merge-packages
         run: |
           if [[ -d ${{ env.folder }} ]]; then
-            PACKAGES=$(find ${{ env.folder }} -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' '
-            echo "PACKAGES=$PACKAGES)" >> "$GITHUB_OUTPUT"
+            PACKAGES=$(find ${{ env.folder }} -name packages_to_install.txt -exec cat {} + | awk '!a[$0]++' | tr '\n' ' ')
+            echo "PACKAGES=$PACKAGES" >> "$GITHUB_OUTPUT"
             echo "Packages to build are: $PACKAGES" >> $GITHUB_STEP_SUMMARY
           else
             echo "No new packages to build" >> $GITHUB_STEP_SUMMARY

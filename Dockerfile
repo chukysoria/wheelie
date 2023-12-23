@@ -2,7 +2,7 @@ ARG DISTRO
 ARG DISTROVER
 ARG ARCH
 
-FROM ghcr.io/chukysoria/baseimage-${DISTRO}:${ARCH}-${DISTROVER} as builder
+FROM ghcr.io/chukysoria/baseimage-${DISTRO}:latest-${DISTROVER}-${ARCH} as builder
 
 ARG DISTRO
 ARG DISTROVER

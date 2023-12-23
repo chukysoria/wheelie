@@ -22,7 +22,7 @@ jobs:
         id: variables
         run: |
           echo "ALLPACKAGES=$( tr '\n' ' ' < packages.txt)" >> $GITHUB_OUTPUT
-          echo "TAGS=$((sed -r 's/-/:/g' | jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_OUTPUT
+          echo "TAGS=$((sed -r 's/-/:latest/g' | jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_OUTPUT
     
     outputs:
       ALLPACKAGES: ${{ steps.variables.outputs.ALLPACKAGES }}
@@ -51,7 +51,7 @@ jobs:
       - name: 🚀 Run container
         id: run-container
         run: |
-          DISTRO="$(echo '${{ matrix.TAG }}' | sed -r 's/:/-/g')"
+          DISTRO="$(echo '${{ matrix.TAG }}' | sed -r 's/:latest/-/g')"
           echo "DISTRO=$DISTRO" >> $GITHUB_OUTPUT
           docker run -d --rm --name $DISTRO ghcr.io/chukysoria/baseimage-${{ matrix.TAG }}
 

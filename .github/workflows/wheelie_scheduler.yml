@@ -79,14 +79,14 @@ jobs:
           fi          
           CPYTHON=$(docker exec ${{ steps.run-container.outputs.DISTRO }} bash -c "printf \"\$(python3 -V)\" | awk '{print \$2}' | awk 'BEGIN{FS=OFS=\".\"} NF--' | sed 's|\.||g' | sed 's|^|cp|g'")
           for PACKAGE in ${{ needs.get-variables.outputs.ALLPACKAGES }}; do
-            if echo "${PACKAGES}" | grep -q "${PACKAGE}"; then
+            if echo "${PACKAGES}" | grep -iq "${PACKAGE}"; then
               break
             fi
             VERSION=$(docker exec ${{ steps.run-container.outputs.DISTRO }} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
             for ARCH in armv7l x86_64 aarch64; do
               if [ "$PACKAGE" = "wrapt" ] && [ "$ARCH" = "armv7l" ]; then
                 echo "**** ${PACKAGE}-${VERSION}-${CPYTHON}-${ARCH} already built for ${{ steps.run-container.outputs.DISTRO }}, skipping ****"
-              elif ! grep -q "${PACKAGE//-/_}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE//-/_}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -q "${PACKAGE//-/_}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then
+              elif ! grep -iq "${PACKAGE//-/_}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -iq "${PACKAGE//-/_}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -iq "${PACKAGE//-/_}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then
                 echo "**** Adding ${PACKAGE}-${VERSION} to build list ****"
                 PACKAGES="${PACKAGE} ${PACKAGES}"
                 break

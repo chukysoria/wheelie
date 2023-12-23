@@ -83,7 +83,7 @@ RUN \
   fi && \
   for PACKAGE in "${PACKAGES}"; do \
     # ignore official arm32v7 wheel of grpcio and wrapt
-    if echo "${PACKAGE}" | grep -q numpy; then \
+    if echo "${PACKAGE}" | grep -iq numpy; then \
       echo "**** Setting numpy build flag ****" && \
       OLD_BUILD_FLAG='--config-settings=setup-args=-Dallow-noblas=true'; \
     fi && \

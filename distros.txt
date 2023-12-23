@@ -1,3 +1,2 @@
-alpine-3.18
 alpine-3.19
 ubuntu-jammy

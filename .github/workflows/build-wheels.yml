@@ -131,7 +131,7 @@ jobs:
       - name: 🚀 Upload Artifact
         uses: actions/upload-artifact@v4.0.0
         with:
-          name: ${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}
+          name: ${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}-${{ matrix.architecture }}
           path: ${{ github.workspace }}/builds/${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}/*
      
       # This ugly bit is necessary, or our cache will grow forever...
@@ -156,7 +156,7 @@ jobs:
           path: temp
       
       - name: ⤵️ Download artifacts
-        uses: actions/download-artifact@v4.1.0
+        uses: actions/download-artifact@v3.0.2
         with:
           path: ./builds
 

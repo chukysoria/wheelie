@@ -100,3 +100,4 @@ pandas-2.1.4-cp311-cp311-musllinux_1_2_aarch64.whl
 pandas-2.1.4-cp311-cp311-musllinux_1_2_armv7l.whl
 lxml-4.9.4-cp311-cp311-musllinux_1_1_x86_64.whl
 lxml-4.9.4-cp311-cp311-musllinux_1_1_aarch64.whl
+lxml-4.9.4-cp311-cp311-musllinux_1_2_armv7l.whl

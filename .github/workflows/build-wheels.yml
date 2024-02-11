@@ -129,7 +129,7 @@ jobs:
           fi
       
       - name: 🚀 Upload Artifact
-        uses: actions/upload-artifact@v4.3.0
+        uses: actions/upload-artifact@v4.3.1
         with:
           name: ${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}-${{ matrix.architecture }}
           path: ${{ github.workspace }}/builds/${{ steps.retrieve-artifacts.outputs.ARTIFACT-NAME }}/*

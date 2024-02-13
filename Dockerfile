@@ -89,6 +89,7 @@ RUN \
     fi && \
     echo "**** Building ${PACKAGE} ****" && \
     pip wheel --wheel-dir=/build --extra-index-url="https://gitlab.com/api/v4/projects/49075787/packages/pypi/simple" \
+    --extra-index-url="https://www.piwheels.org/simple" \
     --find-links="https://wheel-index.linuxserver.io/${INDEXDISTRO}/" --no-cache-dir \
     -v ${BUILD_FLAG} \
     ${PACKAGE}; \

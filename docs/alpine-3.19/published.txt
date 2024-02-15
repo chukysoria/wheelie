@@ -75,3 +75,6 @@ numpy-1.26.4-cp311-cp311-musllinux_1_1_aarch64.whl
 grpcio-1.60.1-cp311-cp311-linux_armv7l.whl
 numpy-1.26.4-cp311-cp311-linux_armv7l.whl
 pandas-2.2.0-cp311-cp311-linux_armv7l.whl
+gevent-24.2.1-cp311-cp311-linux_armv7l.whl
+gevent-24.2.1-cp311-cp311-musllinux_1_1_x86_64.whl
+gevent-24.2.1-cp311-cp311-musllinux_1_1_aarch64.whl

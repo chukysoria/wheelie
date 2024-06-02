@@ -190,3 +190,4 @@ grpcio-1.64.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
 wrapt-1.16.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
 zope.interface-6.4.post2-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
 lxml-4.9.4-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_24_aarch64.whl
+zope.interface-6.4.post2-cp310-cp310-manylinux2014_armv7l.manylinux_2_17_armv7l.whl

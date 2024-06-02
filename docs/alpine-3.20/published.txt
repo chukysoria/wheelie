@@ -38,3 +38,4 @@ zope.interface-6.4.post2-cp312-cp312-musllinux_1_2_aarch64.whl
 lxml-4.9.4-cp312-cp312-musllinux_1_2_armv7l.whl
 lxml-4.9.4-cp312-cp312-musllinux_1_1_x86_64.whl
 lxml-4.9.4-cp312-cp312-musllinux_1_1_aarch64.whl
+ninja-1.11.1.1-cp312-cp312-musllinux_1_2_armv7l.whl

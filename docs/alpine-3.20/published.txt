@@ -1,0 +1,3 @@
+webrtcvad_wheels-2.0.11.post1-cp312-cp312-musllinux_1_2_armv7l.whl
+webrtcvad_wheels-2.0.11.post1-cp312-cp312-musllinux_1_2_x86_64.whl
+webrtcvad_wheels-2.0.11.post1-cp312-cp312-musllinux_1_2_aarch64.whl

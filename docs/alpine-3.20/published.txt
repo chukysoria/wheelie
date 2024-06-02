@@ -35,3 +35,6 @@ pywavelets-1.6.0-cp312-cp312-musllinux_1_1_aarch64.whl
 webrtcvad-2.0.10-cp312-cp312-musllinux_1_2_aarch64.whl
 wrapt-1.16.0-cp312-cp312-musllinux_1_1_aarch64.whl
 zope.interface-6.4.post2-cp312-cp312-musllinux_1_2_aarch64.whl
+lxml-4.9.4-cp312-cp312-musllinux_1_2_armv7l.whl
+lxml-4.9.4-cp312-cp312-musllinux_1_1_x86_64.whl
+lxml-4.9.4-cp312-cp312-musllinux_1_1_aarch64.whl

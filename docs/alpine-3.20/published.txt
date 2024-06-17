@@ -44,3 +44,5 @@ pillow-10.3.0-cp312-cp312-musllinux_1_2_armv7l.whl
 psycopg2_binary-2.9.9-cp312-cp312-musllinux_1_2_armv7l.whl
 grpcio-1.64.1-cp312-cp312-musllinux_1_1_x86_64.whl
 grpcio-1.64.1-cp312-cp312-musllinux_1_2_aarch64.whl
+numpy-2.0.0-cp312-cp312-musllinux_1_1_x86_64.whl
+numpy-2.0.0-cp312-cp312-musllinux_1_2_aarch64.whl

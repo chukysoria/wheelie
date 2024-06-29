@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: ["armv7", "x86_64", "aarch64"]
+        architecture: ["x86_64", "aarch64"]
         DISTRO: [alpine-3.19, alpine-3.20, ubuntu-jammy]
 
     steps:
@@ -166,7 +166,7 @@ jobs:
           echo "pushing wheels as necessary"
           mkdir dist
             for os in ubuntu $(cat ./temp/distros.txt | grep alpine); do
-              for arch in armv7 x86_64 aarch64; do
+              for arch in x86_64 aarch64; do
                 for wheel in $(ls ./builds/build-${os}-${arch}/); do
                   if ! grep -iq "${wheel}" "./temp/docs/${os}/published.txt" && ! echo "${wheel}" | grep -iq "none-any"; then
                       echo "**** ${wheel} for ${os} will be uploaded to Python Package Repo ****"

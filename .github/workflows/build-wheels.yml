@@ -80,7 +80,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Build
-        uses: docker/build-push-action@v5.3.0
+        uses: docker/build-push-action@v6.0.1
         with:
           platforms: ${{ steps.flags.outputs.platform }}
           load: true
@@ -96,7 +96,7 @@ jobs:
             PACKAGES=${{ inputs.PACKAGES }}
 
       - name: 🚀 Push
-        uses: docker/build-push-action@v5.3.0
+        uses: docker/build-push-action@v6.0.1
         with:
           platforms: ${{ steps.flags.outputs.platform }}
           push: true
@@ -150,7 +150,7 @@ jobs:
     needs: build-multi
     steps:
       - name: ⤵️ Checkout to temp folder
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4.1.7
         with:
           ref: main
           path: temp
@@ -187,7 +187,7 @@ jobs:
           fi
 
       - name: 🚀 Publish packages
-        uses: pypa/gh-action-pypi-publish@v1.8.14
+        uses: pypa/gh-action-pypi-publish@v1.9.0
         if: ${{ steps.check-wheels.outputs.PUBLISH }}
         with:
           user: ${{ secrets.PY_REPO_USER }}

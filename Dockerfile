@@ -1,8 +1,8 @@
-ARG DISTRO
-ARG DISTROVER
-ARG ARCH
+ARG DISTRO="ubuntu"
+ARG DISTROVER="noble"
+ARG ARCH="x86_64"
 
-FROM ghcr.io/chukysoria/baseimage-${DISTRO}:latest-${DISTROVER}-${ARCH} as builder
+FROM ghcr.io/chukysoria/baseimage-${DISTRO}:latest-${DISTROVER}-${ARCH} AS builder
 
 ARG DISTRO
 ARG DISTROVER

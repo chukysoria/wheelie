@@ -159,6 +159,7 @@ jobs:
         uses: actions/download-artifact@v4.1.8
         with:
           path: ./builds
+          pattern: build-*
 
       - name: 🚀 Check wheels created
         id: check-wheels

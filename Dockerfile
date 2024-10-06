@@ -110,6 +110,6 @@ RUN \
   echo "**** Wheels to export are: ****" && \
   ls /build-repaired
 
-FROM scratch as artifacts
+FROM scratch AS artifacts
 
 COPY --from=builder /build-repaired /build

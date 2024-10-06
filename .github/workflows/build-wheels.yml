@@ -35,8 +35,8 @@ jobs:
       - name:  ℹ️ Export distros and arch
         id: variables
         run: |
-          echo "ARCHS=$((sed -r 's/-/:latest-/g' | jq -R -s -c 'split("\n")') < arch.txt )" >> $GITHUB_OUTPUT
-          echo "DISTROS=$((sed -r 's/-/:latest-/g' | jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_OUTPUT
+          echo "ARCHS=$((jq -R -s -c 'split("\n")') < arch.txt )" >> $GITHUB_OUTPUT
+          echo "DISTROS=$((jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_OUTPUT
     
     outputs:
       ARCHS: ${{ steps.variables.outputs.ARCHS }}

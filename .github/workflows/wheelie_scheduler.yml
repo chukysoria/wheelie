@@ -7,13 +7,14 @@ on:
 
 jobs:
   get-variables:
-    name: 👷 Get packages and distros
+    name: 👷 Get packages, archs, and distros
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out repo
         uses: actions/checkout@v4.2.0
         with:
           sparse-checkout: |
+            arch.txt
             packages.txt
             distros.txt
           sparse-checkout-cone-mode: false
@@ -22,10 +23,12 @@ jobs:
         id: variables
         run: |
           echo "ALLPACKAGES=$( tr '\n' ' ' < packages.txt)" >> $GITHUB_OUTPUT
+          echo "ARCHS=$( tr '\n' ' ' < arch.txt)" >> $GITHUB_OUTPUT
           echo "TAGS=$((sed -r 's/-/:latest-/g' | jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_OUTPUT
     
     outputs:
       ALLPACKAGES: ${{ steps.variables.outputs.ALLPACKAGES }}
+      ARCHS: ${{ steps.variables.outputs.ARCHS }}
       TAGS: ${{ steps.variables.outputs.TAGS }}
 
   run-containers:
@@ -83,7 +86,7 @@ jobs:
               break
             fi
             VERSION=$(docker exec ${{ steps.run-container.outputs.DISTRO }} bash -c "/lsiopy/bin/pip install ${PACKAGE}== 2>&1 | sed -rn 's|^.*versions:(.*)\).*$|\1|p' | sed 's%[0-9.]*\(a\|b\|rc\|dev\)[0-9]*%%g' | sed 's%,%%g' | awk '{print \$(NF)}'")
-            for ARCH in x86_64 aarch64; do
+            for ARCH in ${{ needs.get-variables.outputs.ARCHS }}; do
               if [ "$PACKAGE" = "wrapt" ] && [ "$ARCH" = "armv7l" ]; then
                 echo "**** ${PACKAGE}-${VERSION}-${CPYTHON}-${ARCH} already built for ${{ steps.run-container.outputs.DISTRO }}, skipping ****"
               elif ! grep -iq "${PACKAGE//-/_}-${VERSION}-${CPYTHON}.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -iq "${PACKAGE//-/_}-${VERSION}.*manylinux.*${ARCH}.whl" "docs/${OS}/published.txt" && ! grep -iq "${PACKAGE//-/_}-${VERSION}.*musllinux.*${ARCH}.whl" "docs/${OS}/published.txt"; then

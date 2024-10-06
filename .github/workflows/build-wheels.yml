@@ -20,9 +20,32 @@ on:
         type: string
 
 jobs:
+  get-variables:
+    name: 👷 Get distros and arch
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out repo
+        uses: actions/checkout@v4.2.0
+        with:
+          sparse-checkout: |
+            arch.txt
+            distros.txt
+          sparse-checkout-cone-mode: false
+      
+      - name:  ℹ️ Export distros and arch
+        id: variables
+        run: |
+          echo "ARCHS=$((sed -r 's/-/:latest-/g' | jq -R -s -c 'split("\n")') < arch.txt )" >> $GITHUB_OUTPUT
+          echo "DISTROS=$((sed -r 's/-/:latest-/g' | jq -R -s -c 'split("\n")') < distros.txt )" >> $GITHUB_OUTPUT
+    
+    outputs:
+      ARCHS: ${{ steps.variables.outputs.ARCHS }}
+      DISTROS: ${{ steps.variables.outputs.DISTROS }}
+
   build-multi:
     name: 👷 Build ${{ matrix.architecture }} - ${{ matrix.DISTRO }} 
     runs-on: ubuntu-latest
+    needs: get-variables
     env:
       DISTRONAME:
       DISTROVER:
@@ -30,8 +53,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: ["x86_64", "aarch64"]
-        DISTRO: [alpine-3.19, alpine-3.20, ubuntu-jammy]
+        architecture: ${{ fromJson(needs.get-variables.outputs.ARCHS) }}
+        DISTRO: ${{ fromJson(needs.get-variables.outputs.DISTROS) }}
 
     steps:
       - name: ℹ️ Compose build flags
@@ -147,7 +170,9 @@ jobs:
   publish-artifacts:
     name: 👷Publish artifacts
     runs-on: ubuntu-latest
-    needs: build-multi
+    needs: 
+      - build-multi
+      - get-variables
     steps:
       - name: ⤵️ Checkout to temp folder
         uses: actions/checkout@v4.2.0
@@ -167,7 +192,7 @@ jobs:
           echo "pushing wheels as necessary"
           mkdir dist
             for os in ubuntu $(cat ./temp/distros.txt | grep alpine); do
-              for arch in x86_64 aarch64; do
+              for arch in ${{ needs.get-variables.outputs.ARCHS }}; do
                 for wheel in $(ls ./builds/build-${os}-${arch}/); do
                   if ! grep -iq "${wheel}" "./temp/docs/${os}/published.txt" && ! echo "${wheel}" | grep -iq "none-any"; then
                       echo "**** ${wheel} for ${os} will be uploaded to Python Package Repo ****"

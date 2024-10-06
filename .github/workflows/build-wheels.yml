@@ -191,7 +191,7 @@ jobs:
           echo "pushing wheels as necessary"
           mkdir dist
             for os in ubuntu $(cat ./temp/distros.txt | grep alpine); do
-              for arch in $(cat ./temp/arch.txt | grep alpine); do
+              for arch in $(cat ./temp/arch.txt); do
                 for wheel in $(ls ./builds/build-${os}-${arch}/); do
                   if ! grep -iq "${wheel}" "./temp/docs/${os}/published.txt" && ! echo "${wheel}" | grep -iq "none-any"; then
                       echo "**** ${wheel} for ${os} will be uploaded to Python Package Repo ****"

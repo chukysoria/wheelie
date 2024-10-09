@@ -107,7 +107,7 @@ jobs:
           fi
         
       - name: 🏗 Upload Artifact
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v4.4.3
         if: ${{ steps.check-packages.outputs.UPLOAD }}
         with:
           name: ${{ steps.run-container.outputs.DISTRO }}

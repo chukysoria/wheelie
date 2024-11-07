@@ -212,7 +212,7 @@ jobs:
           fi
 
       - name: 🚀 Publish packages
-        uses: pypa/gh-action-pypi-publish@v1.11.0
+        uses: pypa/gh-action-pypi-publish@v1.12.2
         if: ${{ steps.check-wheels.outputs.PUBLISH }}
         with:
           user: ${{ secrets.PY_REPO_USER }}

@@ -1,16 +1,5 @@
-cffi
-gevent
 lxml
 numpy
-pandas
 Pillow
-PyNaCl
-PyYAML
-grpcio
-bluepy
-PyWavelets
-wrapt
-ninja
 webrtcvad
-psycopg2_binary
 webrtcvad-wheels

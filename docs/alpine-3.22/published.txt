@@ -1,0 +1,8 @@
+lxml-5.4.0-cp312-cp312-musllinux_1_2_x86_64.whl
+numpy-2.2.6-cp312-cp312-musllinux_1_2_x86_64.whl
+pillow-11.2.1-cp312-cp312-musllinux_1_2_x86_64.whl
+webrtcvad_wheels-2.0.14-cp312-cp312-musllinux_1_2_x86_64.whl
+lxml-5.4.0-cp312-cp312-musllinux_1_2_aarch64.whl
+numpy-2.2.6-cp312-cp312-musllinux_1_2_aarch64.whl
+pillow-11.2.1-cp312-cp312-musllinux_1_2_aarch64.whl
+webrtcvad_wheels-2.0.14-cp312-cp312-musllinux_1_2_aarch64.whl

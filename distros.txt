@@ -1,1 +1,1 @@
-alpine-3.23
+alpine-3.24

@@ -1,5 +1,5 @@
 ARG DISTRO="ubuntu"
-ARG DISTROVER="noble"
+ARG DISTROVER="resolute"
 ARG ARCH="x86_64"
 
 FROM ghcr.io/chukysoria/baseimage-${DISTRO}:latest-${DISTROVER}-${ARCH} AS builder
